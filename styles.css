@@ -311,11 +311,13 @@ details[open] > summary .plus::after { transform: rotate(0deg); }
 .chips button .ico { width: 1.9em; height: 1.9em; padding: 0.4em; background: var(--blue); color: #fff; }
 .chips button:hover { background: var(--text); color: var(--bg); }
 .chips button[disabled] { padding-left: 0.95rem; cursor: default; pointer-events: none; }
-/* Personajes con precio: uno por renglón, con el precio a la derecha */
-.chips--list { flex-direction: column; align-items: stretch; gap: 0.45rem; }
-.chips--list li { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 0.8rem; flex-wrap: wrap; }
-.chips__price { font-size: 0.86rem; color: rgba(242, 240, 234, 0.85); white-space: nowrap; }
-.chips__price b { font-stretch: 62%; font-weight: 800; font-size: 1.5rem; line-height: 1; color: var(--text); margin-right: 0.25rem; font-variant-numeric: tabular-nums; }
+/* Personajes con precio: uno por renglón; el botón a la izquierda y el precio a la derecha, siempre alineados */
+.chips--list { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+.chips--list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 0.8rem; }
+.chips.chips--list button { width: 100%; min-width: 0; text-align: left; line-height: 1.2; border-radius: 22px; }
+.chips--list button .ico { flex: none; }
+.chips__price { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; min-width: 4.6rem; font-size: 0.8rem; line-height: 1.1; color: rgba(242, 240, 234, 0.85); white-space: nowrap; text-align: right; }
+.chips__price b { font-stretch: 62%; font-weight: 800; font-size: 1.6rem; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
 .chips__hint { font-size: 0.8rem !important; font-weight: 600; color: var(--blue-ink) !important; margin-top: 0.9rem; }
 .price { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
 .price p { display: flex; align-items: center; gap: 0.7rem; padding: 0.5rem 0.85rem; border: 1px solid var(--line); color: var(--muted); }
