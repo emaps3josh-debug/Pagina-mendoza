@@ -184,12 +184,15 @@
   };
   const W = A.shows || {};
   const chars = list(W.personajes).filter((c) => c.nombre);
+  // Precio y duración de cada personaje (si no tiene, solo sale su botón)
+  const charPrice = (c) => (+c.precio || c.duracion ? '<span class="chips__price">' + (+c.precio ? "<b>" + money(c.precio) + "</b>" : "") + (c.duracion ? " " + esc(c.duracion) : "") + "</span>" : "");
+  const showsPriced = chars.some((c) => +c.precio);
   const showsCard = W.titulo ? '<article class="extra extra--feature" id="x-shows" data-keys="botarga personaje animación show shows baile">' +
     (W.foto ? '<img src="' + esc(W.foto) + '" alt="' + esc(W.fotoAlt) + '" loading="lazy" decoding="async">' : "") +
     '<div class="extra__over"><h3>' + esc(W.titulo) + "</h3><p>" + esc(W.texto) + "</p>" +
     (chars.some((c) => c.video) ? '<p class="chips__hint">Toca un personaje para ver su video</p>' : "") +
-    '<ul class="chips">' + chars.map((c) => "<li>" + (c.video ? videoBtn("", c.video, c.nombre, c.nombre, c.portada) : '<button type="button" data-cap="' + esc(c.nombre) + '" disabled>' + esc(c.nombre) + "</button>") + "</li>").join("") + "</ul>" +
-    '<a class="tbtn tbtn--wa" data-wa="' + esc(W.mensaje || "Hola, quiero información de los shows.") + '" href="#">' + ico("i-wa") + " Preguntar precio</a></div></article>" : "";
+    '<ul class="chips' + (chars.some((c) => +c.precio || c.duracion) ? " chips--list" : "") + '">' + chars.map((c) => "<li>" + (c.video ? videoBtn("", c.video, c.nombre, c.nombre, c.portada) : '<button type="button" data-cap="' + esc(c.nombre) + '" disabled>' + esc(c.nombre) + "</button>") + charPrice(c) + "</li>").join("") + "</ul>" +
+    '<a class="tbtn tbtn--wa" data-wa="' + esc(W.mensaje || "Hola, quiero información de los shows.") + '" href="#">' + ico("i-wa") + (showsPriced ? " Quiero un show" : " Preguntar precio") + "</a></div></article>" : "";
   const extras = list(A.lista);
   // Las tarjetas con foto van primero (junto a la de shows); las largas, al final
   html("#extras", showsCard + extras.filter((x) => x.foto).map(extraCard).join("") + extras.filter((x) => !x.foto).map(extraCard).join(""));

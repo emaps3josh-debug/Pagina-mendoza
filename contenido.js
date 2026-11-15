@@ -399,11 +399,11 @@ window.SITIO = {
       "texto": "Diversión garantizada para chicos y grandes.",
       "foto": "assets/img/shots-monja.jpg",
       "fotoAlt": "Show de la Monja bailando con los invitados junto al carrito de shots LED",
-      "mensaje": "Hola, quiero información y precio de los shows de botargas y personajes.",
+      "mensaje": "Hola, me interesa un show de botarga o personaje para mi evento.",
       "personajes": [
-        { "nombre": "Cabezón de Bad Bunny", "video": "assets/video/show-bad-bunny.mp4", "portada": "assets/video/show-bad-bunny.jpg" },
-        { "nombre": "Show de la Monja", "video": "https://youtube.com/shorts/i0dfVLEKKos", "portada": "" },
-        { "nombre": "Botarga de unicornio", "video": "assets/video/unicornio.mp4", "portada": "assets/video/unicornio.jpg" }
+        { "nombre": "Cabezón de Bad Bunny", "precio": 600, "duracion": "30 minutos", "video": "assets/video/show-bad-bunny.mp4", "portada": "assets/video/show-bad-bunny.jpg" },
+        { "nombre": "Show de la Monja", "precio": 600, "duracion": "30 minutos", "video": "https://youtube.com/shorts/i0dfVLEKKos", "portada": "" },
+        { "nombre": "Botarga de unicornio", "precio": 350, "duracion": "20 minutos", "video": "assets/video/unicornio.mp4", "portada": "assets/video/unicornio.jpg" }
       ]
     },
     "lista": [
@@ -446,13 +446,13 @@ window.SITIO = {
         "foto": "assets/img/barra-snacks.jpg",
         "fotoAlt": "Barra de snacks blanca con luces, montada en un jardín",
         "icono": "i-snack",
-        "precio": 0,
-        "precioNota": "",
-        "promo": 0,
-        "promoNota": "",
+        "precio": 50,
+        "precioNota": "Por persona, a partir de 50 personas",
+        "promo": 45,
+        "promoNota": "Por persona, si son más de 100 personas",
         "video": "",
-        "boton": "Preguntar precio",
-        "mensaje": "Hola, quiero información y precio de la barra de snacks.",
+        "boton": "La quiero",
+        "mensaje": "Hola, me interesa agregar la barra de snacks a mi evento.",
         "buscar": "dulces botanas botana mesa comida"
       },
       {
@@ -564,12 +564,12 @@ window.SITIO = {
     "texto": "Contamos con referencias y manejamos contrato."
   },
   "cotizador": [
-    { "nombre": "Show del Cabezón de Bad Bunny", "nota": "", "mensaje": "", "noEn": "Experience", "soloEn": "" },
-    { "nombre": "Show de la Monja", "nota": "", "mensaje": "", "noEn": "", "soloEn": "" },
-    { "nombre": "Botarga de unicornio", "nota": "20 minutos", "mensaje": "", "noEn": "Premium VIP", "soloEn": "" },
+    { "nombre": "Show del Cabezón de Bad Bunny", "nota": "$600 · 30 minutos", "mensaje": "Show del Cabezón de Bad Bunny ($600)", "noEn": "Experience", "soloEn": "" },
+    { "nombre": "Show de la Monja", "nota": "$600 · 30 minutos", "mensaje": "Show de la Monja ($600)", "noEn": "", "soloEn": "" },
+    { "nombre": "Botarga de unicornio", "nota": "$350 · 20 minutos", "mensaje": "Botarga de unicornio ($350)", "noEn": "Premium VIP", "soloEn": "" },
     { "nombre": "Carrito de shots LED", "nota": "$750 · carrito y 150 vasos", "mensaje": "Carrito de shots LED ($750)", "noEn": "Experience|Fiesta LED|Premium VIP|Élite VIP", "soloEn": "" },
     { "nombre": "Palomitas gourmet", "nota": "$1,500 · 3 sabores a elegir", "mensaje": "Palomitas gourmet ($1,500)", "noEn": "Infantil|Premium VIP|Élite VIP", "soloEn": "" },
-    { "nombre": "Barra de snacks", "nota": "", "mensaje": "", "noEn": "", "soloEn": "" },
+    { "nombre": "Barra de snacks", "nota": "$50 por persona · $45 si son más de 100", "mensaje": "", "noEn": "", "soloEn": "" },
     { "nombre": "Inflable infantil", "nota": "$600 · $500 para clientes", "mensaje": "", "noEn": "Infantil", "soloEn": "" },
     { "nombre": "Invitaciones digitales", "nota": "$280 para clientes", "mensaje": "", "noEn": "", "soloEn": "" },
     { "nombre": "Pantalla de 58 pulgadas", "nota": "+$500", "mensaje": "", "noEn": "", "soloEn": "Élite Plus" },

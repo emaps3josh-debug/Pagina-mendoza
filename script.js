@@ -429,7 +429,10 @@ if (search && search.showModal) {
     const prices = $$(".price b", x).map((b) => text(b));
     add("Adicional", text($("h3", x)), prices.length ? "Desde " + prices[prices.length - 1] : "Precio al cotizar", x, "adicional extra agregar");
   });
-  $$(".chips button").forEach((b) => add("Show", b.dataset.cap, "Toca para ver su video", b, "show botarga personaje video"));
+  $$(".chips button").forEach((b) => {
+    const price = text($(".chips__price", b.parentElement));
+    add("Show", b.dataset.cap, price || "Toca para ver su video", b, "show botarga personaje video" + (price ? " precio costo cuanto cuesta" : ""));
+  });
   // Lo que incluyen todos, pasos y preguntas
   $$(".always li").forEach((li) => add("Incluido en todos", text($("b", li)), text($("span", li)), li, "incluye incluido"));
   $$(".steps li").forEach((li) => add("Cómo apartar", text($("h3", li)), text($("p", li)), li, ""));
