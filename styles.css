@@ -589,3 +589,115 @@ dialog::backdrop { background: rgba(10, 10, 11, 0.88); }
   *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
   .rv { opacity: 1; transform: none; }
 }
+
+/* =====================================================================
+   EFECTOS Y MÚSICA
+   Los activa efectos.js poniendo la clase "fx" en <html> ("is-playing" mientras suena la música).
+   Con "reducir movimiento" activado en el teléfono no se aplica ninguno.
+   ===================================================================== */
+@property --fx-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+:root { --logo-w: clamp(118px, 17vw, 190px); --gold: #e8b84a; }
+
+/* ---------- Barra de avance en forma de ondas ---------- */
+.wave { position: fixed; inset: 0 0 auto 0; width: 100%; height: 16px; z-index: 70; pointer-events: none; }
+.fx .progress { display: none; }
+
+/* ---------- Al tocar: onda en el punto del toque y botón que se hunde ---------- */
+.tap { position: fixed; z-index: 95; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 2px solid var(--blue-ink); pointer-events: none; animation: fx-tap 0.7s var(--ease) forwards; }
+.tap::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid #fff; opacity: 0; animation: fx-tap 0.7s var(--ease) 0.1s forwards; }
+@keyframes fx-tap { from { transform: scale(0.4); opacity: 0.9; } to { transform: scale(5); opacity: 0; } }
+.fx .btn:active, .fx .tbtn:active, .fx .opt:active span, .fx .dock a:active, .fx .dock button:active, .fx .chips button:active, .fx .jump a:active, .fx .music:active, .fx .gtabs button:active, .fx .nav__search:active { scale: 0.95; }
+.fx .pack:active, .fx .extra:active, .fx .g:active, .fx .steps li:active { scale: 0.985; }
+
+/* ---------- Logo: flota, brilla y lanza ondas; late con la música ---------- */
+.fx .hero { overflow: clip; }
+.fx .hero__bg { transform: translateY(var(--hero-y, 0px)) scale(1.1); will-change: transform; }
+.fx .hero__copy { position: relative; }
+.fx .hero__logo { position: relative; z-index: 1; animation: fx-float 6s ease-in-out infinite; }
+@keyframes fx-float {
+  0%, 100% { translate: 0 0; filter: drop-shadow(0 6px 24px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 0 rgba(37, 99, 255, 0)); }
+  50% { translate: 0 -7px; filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 26px rgba(37, 99, 255, 0.85)); }
+}
+.fx .hero__copy::before, .fx .hero__copy::after { content: ""; position: absolute; left: 50%; top: calc(clamp(1.4rem, 4vw, 3rem) + var(--logo-w) * 0.46); width: var(--logo-w); height: var(--logo-w); margin: calc(var(--logo-w) * -0.5) 0 0 calc(var(--logo-w) * -0.5); border-radius: 50%; border: 1.5px solid rgba(122, 165, 255, 0.75); opacity: 0; pointer-events: none; animation: fx-ring 3.6s ease-out infinite; }
+.fx .hero__copy::after { animation-delay: 1.8s; }
+@keyframes fx-ring { from { transform: scale(0.7); opacity: 0.7; } to { transform: scale(2.2); opacity: 0; } }
+.fx.is-playing .hero__logo { animation: fx-float 6s ease-in-out infinite, fx-beat 0.98s ease-in-out infinite; }
+.fx.is-playing .nav__brand img { animation: fx-beat 0.98s ease-in-out infinite; }
+.fx.is-playing .hero__copy::before, .fx.is-playing .hero__copy::after { animation-duration: 1.96s; }
+.fx.is-playing .hero__copy::after { animation-delay: 0.98s; }
+@keyframes fx-beat { 0%, 100% { scale: 1; } 12% { scale: 1.05; } 30% { scale: 1; } 62% { scale: 1.025; } 78% { scale: 1; } }
+
+/* ---------- Cada apartado: línea de luz que entra por arriba ---------- */
+.fx .section:not(.section--paper) { position: relative; }
+.fx .section:not(.section--paper)::before { content: ""; position: absolute; top: -1px; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--blue) 25%, #cfe0ff 50%, var(--blue) 75%, transparent); box-shadow: 0 0 16px rgba(37, 99, 255, 0.9); transform: scaleX(0); transform-origin: 0 50%; opacity: 0; pointer-events: none; }
+.fx .section.seen:not(.section--paper)::before { animation: fx-line 1.8s var(--ease) forwards; }
+@keyframes fx-line { 0% { transform: scaleX(0); opacity: 1; } 65% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0.4; } }
+
+/* ---------- Tarjetas: una luz recorre el borde al aparecer (y al pasar el cursor) ---------- */
+.fx .lit { position: relative; }
+.fx .kids__photo { border-radius: var(--r); overflow: hidden; }
+.fx .lit::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; padding: 1.5px; background: conic-gradient(from var(--fx-a), transparent 0 58%, var(--blue) 74%, #d6e4ff 86%, var(--blue) 95%, transparent 100%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); opacity: 0; pointer-events: none; }
+.fx .lit.seen::after { animation: fx-orbit 2.4s linear calc(var(--fx-i, 0) * 120ms) 1 both; }
+@keyframes fx-orbit { 0% { --fx-a: 0deg; opacity: 0; } 12%, 78% { opacity: 1; } 100% { --fx-a: 360deg; opacity: 0; } }
+@keyframes fx-orbit-loop { from { --fx-a: 0deg; } to { --fx-a: 360deg; } }
+/* Lo destacado mantiene la luz girando */
+.fx .pack--top.seen::after, .fx .pack.is-rec::after, .fx .finder.seen::after { animation: fx-orbit-loop 5s linear infinite; opacity: 0.9; }
+@media (hover: hover) { .fx .lit:hover::after { animation: fx-orbit-loop 2.4s linear infinite; opacity: 1; } }
+
+/* ---------- Pasos para apartar: se encienden uno tras otro ---------- */
+.fx .steps li::before { transform-origin: 0 70%; }
+.fx .steps li.seen::before { animation: fx-num 0.9s var(--ease) calc(var(--fx-i, 0) * 320ms) both; }
+.fx .steps li.seen::after { animation-delay: calc(var(--fx-i, 0) * 320ms); }
+.fx .steps li { transition: border-color 0.6s ease calc(var(--fx-i, 0) * 320ms + 0.5s), opacity 0.6s var(--ease), transform 0.6s var(--ease); }
+.fx .steps li.seen { border-color: rgba(122, 165, 255, 0.5); }
+@keyframes fx-num { 0% { scale: 0.3; opacity: 0; } 55% { scale: 1.22; opacity: 1; text-shadow: 0 0 34px rgba(37, 99, 255, 1); } 100% { scale: 1; opacity: 1; text-shadow: 0 0 0 rgba(37, 99, 255, 0); } }
+@media (max-width: 520px) {
+  .fx .steps li.seen::before, .fx .steps li.seen::after { animation-delay: 0ms; }
+  .fx .steps li { transition-delay: 0.4s, 0s, 0s; }
+}
+
+/* ---------- Reseñas: estrellas que caen una por una y marco dorado ---------- */
+.fx .reviews__stars span, .fx .opin__stars span { display: inline-block; opacity: 0; }
+.fx .reviews.seen .reviews__stars span, .fx .opin li.seen .opin__stars span { animation: fx-star 0.6s var(--ease) calc(var(--i, 0) * 110ms + 200ms) both, fx-twinkle 2.8s ease-in-out calc(var(--i, 0) * 280ms + 1.4s) infinite; }
+@keyframes fx-star { 0% { opacity: 0; scale: 0; rotate: -120deg; } 60% { opacity: 1; scale: 1.55; rotate: 14deg; } 100% { opacity: 1; scale: 1; rotate: 0deg; } }
+@keyframes fx-twinkle { 0%, 100% { text-shadow: 0 0 0 rgba(255, 215, 106, 0); } 50% { text-shadow: 0 0 14px rgba(255, 215, 106, 0.95); } }
+.fx .reviews.seen { animation: fx-gold 2.6s ease-out 1; border-color: rgba(232, 184, 74, 0.55); }
+@keyframes fx-gold { 0% { box-shadow: 0 0 0 0 rgba(232, 184, 74, 0); } 30% { box-shadow: 0 0 0 2px rgba(232, 184, 74, 0.8), 0 0 46px rgba(232, 184, 74, 0.4); } 100% { box-shadow: 0 0 0 0 rgba(232, 184, 74, 0); } }
+.fx .reviews.lit::after { background: conic-gradient(from var(--fx-a), transparent 0 58%, var(--gold) 74%, #fff1c2 86%, var(--gold) 95%, transparent 100%); }
+.fx .reviews.lit.seen::after { animation: fx-orbit-loop 6s linear infinite; opacity: 0.85; }
+.fx .opin li { opacity: 0; translate: 0 22px; border: 1px solid rgba(232, 184, 74, 0.22); transition: opacity 0.7s var(--ease), translate 0.7s var(--ease), border-color 0.3s; transition-delay: calc(var(--fx-i, 0) * 110ms); }
+.fx .opin li.seen { opacity: 1; translate: 0 0; }
+@media (hover: hover) { .fx .opin li.seen:hover { translate: 0 -4px; border-color: var(--gold); transition-delay: 0s; } }
+
+/* ---------- Fotos: entran con zoom, color y un destello ---------- */
+.fx .g img, .fx .kids__photo img { scale: 1.2; filter: saturate(0.45) brightness(0.72); transition: scale 1.4s var(--ease), filter 1.2s ease, transform 0.9s var(--ease); transition-delay: calc(var(--fx-i, 0) * 70ms); }
+.fx .g.seen img, .fx .kids__photo.seen img { scale: 1; filter: none; }
+.fx .g::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, 0.3) 50%, transparent 68%); translate: -130% 0; pointer-events: none; }
+.fx .g.seen::after { animation: fx-shine 1.2s var(--ease) calc(var(--fx-i, 0) * 70ms + 250ms) 1 both; }
+@keyframes fx-shine { from { translate: -130% 0; } to { translate: 130% 0; } }
+.fx .g span { translate: 0 10px; opacity: 0; transition: translate 0.6s var(--ease) 0.5s, opacity 0.6s ease 0.5s; }
+.fx .g.seen span { translate: 0 0; opacity: 1; }
+
+/* ---------- Botón de música ---------- */
+.music { position: fixed; left: 16px; bottom: 16px; z-index: 56; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-2); background: rgba(10, 10, 11, 0.92); color: var(--text); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); transition: border-color 0.2s, color 0.2s, background 0.2s; }
+.music:hover { border-color: var(--text); }
+.music__eq { position: relative; display: flex; align-items: flex-end; gap: 2.5px; height: 18px; }
+.music__eq i { width: 3px; height: 5px; border-radius: 1.5px; background: currentColor; transform-origin: 50% 100%; }
+.music__eq i:nth-child(2) { height: 11px; }
+.music__eq i:nth-child(3) { height: 8px; }
+.music__eq i:nth-child(4) { height: 14px; }
+.is-playing .music { border-color: var(--blue); color: var(--blue-ink); }
+.is-playing .music__eq i { height: 18px; animation: fx-eq 0.98s ease-in-out infinite; }
+.is-playing .music__eq i:nth-child(2) { animation-delay: -0.3s; }
+.is-playing .music__eq i:nth-child(3) { animation-delay: -0.62s; }
+.is-playing .music__eq i:nth-child(4) { animation-delay: -0.15s; }
+@keyframes fx-eq { 0%, 100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
+/* Apagada por el visitante: una línea cruzada */
+.music.is-off { color: var(--muted); }
+.music.is-off .music__eq::after { content: ""; position: absolute; left: -5px; right: -5px; top: 50%; height: 2px; background: currentColor; transform: rotate(-38deg); }
+.music__tip { position: fixed; left: 74px; bottom: 24px; z-index: 56; max-width: calc(100vw - 96px); padding: 0.5rem 0.9rem; border-radius: 999px; background: var(--paper); color: var(--ink); font-size: 0.84rem; font-weight: 600; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); pointer-events: none; animation: fx-tip 5.2s ease forwards; }
+@keyframes fx-tip { 0% { opacity: 0; translate: -8px 0; } 8%, 85% { opacity: 1; translate: 0 0; } 100% { opacity: 0; translate: 0 0; } }
+@media (max-width: 760px) {
+  .music { left: 12px; bottom: calc(var(--dock-h) + 12px); width: 44px; height: 44px; }
+  .music__tip { left: 64px; bottom: calc(var(--dock-h) + 18px); max-width: calc(100vw - 80px); }
+}

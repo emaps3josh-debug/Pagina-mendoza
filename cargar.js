@@ -2,7 +2,8 @@
    1. Si Firebase está configurado (firebase-config.js), trae lo último que publicaste en el panel.
    2. Si Firebase no responde, usa la última copia guardada en este navegador.
    3. Si no hay nada de lo anterior, usa contenido.js (el contenido de respaldo).
-   Después carga render.js (dibuja la página) y script.js (menú, filtros, buscador). */
+   Después carga render.js (dibuja la página), script.js (menú, filtros, buscador)
+   y efectos.js (música de fondo y animaciones). */
 (async () => {
   const cfg = window.FIREBASE_CONFIG || {};
   const CACHE_KEY = "mendoza-publicado";
@@ -35,7 +36,7 @@
     }
   }
 
-  for (const src of ["render.js", "script.js"]) {
+  for (const src of ["render.js", "script.js", "efectos.js"]) {
     await new Promise((done) => {
       const s = document.createElement("script");
       s.src = src;

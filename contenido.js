@@ -472,6 +472,22 @@ window.SITIO = {
         "buscar": "brincolín brincolin castillo niños juego frozen"
       },
       {
+        "id": "x-batucada",
+        "nombre": "Batucada (accesorios de fiesta)",
+        "texto": "Accesorios para animar la pista: 6 diademas con mechudos, 6 corbatas, 6 sombreros, 6 pares de mechudos, 6 collares hawaianos y corona para el festejado.",
+        "foto": "",
+        "fotoAlt": "",
+        "icono": "i-star",
+        "precio": 350,
+        "precioNota": "6 piezas de cada accesorio",
+        "promo": 500,
+        "promoNota": "Paquete doble: 12 piezas de cada accesorio",
+        "video": "",
+        "boton": "La quiero",
+        "mensaje": "Hola, me interesa agregar la batucada (accesorios de fiesta) a mi evento.",
+        "buscar": "accesorios fiesta diademas corbatas sombreros mechudos collares hawaianos corona hora loca"
+      },
+      {
         "id": "x-invitaciones",
         "nombre": "Invitaciones digitales interactivas",
         "texto": "Personalizadas, con botones interactivos, música, galería de fotos, ubicación y confirmación por WhatsApp.",
@@ -563,6 +579,12 @@ window.SITIO = {
     "resaltado": "con $500",
     "texto": "Contamos con referencias y manejamos contrato."
   },
+  "musica": {
+    "activa": true,
+    "auto": true,
+    "volumen": 15,
+    "archivo": "musica.mp3"
+  },
   "cotizador": [
     { "nombre": "Show del Cabezón de Bad Bunny", "nota": "$600 · 30 minutos", "mensaje": "Show del Cabezón de Bad Bunny ($600)", "noEn": "Experience", "soloEn": "" },
     { "nombre": "Show de la Monja", "nota": "$600 · 30 minutos", "mensaje": "Show de la Monja ($600)", "noEn": "", "soloEn": "" },
@@ -571,6 +593,7 @@ window.SITIO = {
     { "nombre": "Palomitas gourmet", "nota": "$1,500 · 3 sabores a elegir", "mensaje": "Palomitas gourmet ($1,500)", "noEn": "Infantil|Premium VIP|Élite VIP", "soloEn": "" },
     { "nombre": "Barra de snacks", "nota": "$50 por persona · $45 si son más de 100", "mensaje": "", "noEn": "", "soloEn": "" },
     { "nombre": "Inflable infantil", "nota": "$600 · $500 para clientes", "mensaje": "", "noEn": "Infantil", "soloEn": "" },
+    { "nombre": "Batucada (accesorios de fiesta)", "nota": "$350 · $500 con el doble de accesorios", "mensaje": "Batucada (accesorios de fiesta)", "noEn": "Premium VIP|Élite VIP", "soloEn": "" },
     { "nombre": "Invitaciones digitales", "nota": "$280 para clientes", "mensaje": "", "noEn": "", "soloEn": "" },
     { "nombre": "Pantalla de 58 pulgadas", "nota": "+$500", "mensaje": "", "noEn": "", "soloEn": "Élite Plus" },
     { "nombre": "Pantalla para karaoke", "nota": "+$600", "mensaje": "", "noEn": "", "soloEn": "Infantil" }

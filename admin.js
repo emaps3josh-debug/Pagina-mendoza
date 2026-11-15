@@ -441,6 +441,16 @@
       ],
     },
     {
+      id: "musica", titulo: "Música", get: () => D.musica || (D.musica = { activa: true, auto: true, volumen: 15, archivo: "musica.mp3" }),
+      help: "La canción que suena de fondo en tu página. El visitante siempre tiene un botón para apagarla, y se pausa sola cuando reproduce un video.",
+      fields: [
+        { key: "activa", label: "Poner música de fondo en la página", type: "check" },
+        { key: "auto", label: "Que empiece sola en el primer toque del visitante (si no, solo al tocar el botón de música)", type: "check" },
+        { key: "volumen", label: "Volumen (0 a 100)", type: "num", w: "half", hint: "15 es bajito. Con más de 30 puede molestar a quien entra." },
+        { key: "archivo", label: "Archivo de la canción", w: "half", ph: "musica.mp3", hint: "Nombre del .mp3 que subiste a GitHub junto a index.html. Para cambiar de canción, sube otro .mp3 y escribe aquí su nombre." },
+      ],
+    },
+    {
       id: "cotizador", titulo: "Cotizador", count: () => D.cotizador.length, get: () => D,
       help: "Las casillas de \"¿Quieres agregar algo más?\" que ve el cliente al cotizar un paquete.",
       fields: [{
