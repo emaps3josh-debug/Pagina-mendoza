@@ -701,3 +701,70 @@ dialog::backdrop { background: rgba(10, 10, 11, 0.88); }
   .music { left: 12px; bottom: calc(var(--dock-h) + 12px); width: 44px; height: 44px; }
   .music__tip { left: 64px; bottom: calc(var(--dock-h) + 18px); max-width: calc(100vw - 80px); }
 }
+
+/* =====================================================================
+   PAQUETES CON COLOR PROPIO Y BOTONES CON EFECTO
+   efectos.js le pone a cada paquete su color en --pc (principal), --pc2 (claro)
+   y --pt (texto encima del color). Se cambia en el panel: Paquetes > Color del paquete.
+   ===================================================================== */
+@property --fx-r { syntax: "<length>"; inherits: false; initial-value: 0px; }
+
+/* ---------- Color del paquete: borde, etiqueta, precio, puntos y botones ---------- */
+.pack[data-tema] { border-color: color-mix(in srgb, var(--pc) 45%, transparent); background-image: radial-gradient(circle at 0% 58%, color-mix(in srgb, var(--pc) 13%, transparent), transparent 46%); }
+.pack[data-tema]:hover { border-color: color-mix(in srgb, var(--pc) 75%, transparent); }
+.pack[data-tema] > *, .pack[data-tema] .pack__body > * { position: relative; z-index: 1; }
+.pack[data-tema] h4 em { color: var(--pc2); }
+.pack[data-tema] .pack__badge, .pack[data-tema].is-rec .pack__body::before { background: var(--pc); color: var(--pt); }
+.pack[data-tema] .pack__price { text-shadow: 0 0 26px color-mix(in srgb, var(--pc) 55%, transparent); }
+.pack[data-tema] .pack__price sup { color: var(--pc2); }
+.pack[data-tema] .pack__alt b { color: var(--pc2); }
+.pack[data-tema] .pack__cap .ico { color: var(--pc2); }
+.pack[data-tema] .pack__tags li { background: color-mix(in srgb, var(--pc) 15%, var(--ink-3)); }
+.pack[data-tema] .pack__tags li::before { border-color: var(--pc2); }
+.pack[data-tema] .btn--pack { background: var(--pc); color: var(--pt); }
+.pack[data-tema] .btn--pack:hover { background: var(--pc2); color: #0a0a0b; }
+.pack[data-tema] .btn--ghost { border-color: color-mix(in srgb, var(--pc) 65%, transparent); }
+.pack[data-tema] .btn--ghost:hover { border-color: var(--pc2); color: var(--pc2); }
+.pack[data-tema].is-rec { border-color: var(--pc); box-shadow: 0 0 0 1px var(--pc), 0 0 36px color-mix(in srgb, var(--pc) 38%, transparent); }
+
+/* ---------- Fondo de cada paquete: ondas de sonido que salen de una esquina ----------
+   Es un fondo tenue (no una foto) que queda detrás del texto, para que nada se pierda. */
+.pack[data-tema]::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    repeating-radial-gradient(circle at 100% 100%, transparent var(--fx-r), transparent calc(var(--fx-r) + 24.5px), color-mix(in srgb, var(--pc) 30%, transparent) calc(var(--fx-r) + 24.5px), color-mix(in srgb, var(--pc) 30%, transparent) calc(var(--fx-r) + 26px)),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--pc) 34%, transparent), transparent 64%);
+  -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0%, rgba(0, 0, 0, 0.55) 38%, transparent 76%);
+  mask-image: radial-gradient(circle at 100% 100%, #000 0%, rgba(0, 0, 0, 0.55) 38%, transparent 76%);
+}
+.fx .pack.live::before { animation: fx-rings 4.2s linear infinite; }
+@keyframes fx-rings { from { --fx-r: 0px; } to { --fx-r: 26px; } }
+
+/* ---------- Luz del borde: permanente y del color de cada paquete ---------- */
+.fx .pack.lit::after, .fx .pack.lit.seen::after, .fx .pack--top.lit.seen::after, .fx .pack.lit.is-rec::after {
+  padding: 2px; opacity: 1;
+  background: conic-gradient(from var(--fx-a), transparent 0 52%, var(--pc) 70%, var(--pc2) 85%, var(--pc) 95%, transparent 100%);
+  animation: fx-orbit-loop 4.6s linear calc(var(--fx-n, 0) * -0.7s) infinite paused;
+}
+.fx .pack.lit.live::after { animation-play-state: running; }
+.fx .pack.lit.is-rec::after, .fx .pack--top.lit::after { animation-duration: 3s; }
+
+/* ---------- Botones ---------- */
+.fx .btn { position: relative; overflow: hidden; }
+/* Destello que cruza los botones principales */
+.fx .btn--wa::after, .fx .btn--pack::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 36%, rgba(255, 255, 255, 0.6) 50%, transparent 64%); translate: -130% 0; pointer-events: none; animation: fx-btn-shine 3.8s ease-in-out calc(var(--fx-n, 0) * 0.35s) infinite; }
+@keyframes fx-btn-shine { 0%, 60% { translate: -130% 0; } 100% { translate: 130% 0; } }
+/* Los de cotizar laten con un halo verde */
+.fx .hero__cta .btn--wa, .fx .cta .btn--wa, .fx .quote .btn--wa, .fx .pview__info .btn--wa, .fx .kids__body .btn--wa, .fx .fab { animation: fx-halo 2.4s ease-out infinite; }
+.fx .cta .btn--wa { animation-name: fx-halo-white; }
+@keyframes fx-halo { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6); } 70%, 100% { box-shadow: 0 0 0 16px rgba(37, 211, 102, 0); } }
+@keyframes fx-halo-white { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6); } 70%, 100% { box-shadow: 0 0 0 18px rgba(255, 255, 255, 0); } }
+/* "Ver paquetes" y los demás botones de línea: la flecha avanza y el borde respira */
+.fx .btn .arrow { display: inline-block; animation: fx-arrow 1.5s ease-in-out infinite; }
+@keyframes fx-arrow { 0%, 100% { translate: 0 0; } 50% { translate: 6px 0; } }
+.fx .btn--line { animation: fx-breathe 2.8s ease-in-out infinite; }
+@keyframes fx-breathe { 0%, 100% { border-color: var(--line-2); box-shadow: 0 0 0 0 rgba(122, 165, 255, 0); } 50% { border-color: var(--blue-ink); box-shadow: 0 0 18px 0 rgba(37, 99, 255, 0.45); } }
+/* Botones chicos de WhatsApp (Lo quiero, Preguntar precio) */
+.fx .tbtn--wa { position: relative; overflow: hidden; }
+.fx .tbtn--wa::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 36%, rgba(127, 240, 171, 0.45) 50%, transparent 64%); translate: -130% 0; pointer-events: none; animation: fx-btn-shine 4.6s ease-in-out calc(var(--fx-i, 0) * 0.4s) infinite; }
+/* Barra inferior: el botón Cotizar late */
+.fx .dock__wa .ico { animation: fx-beat 1.96s ease-in-out infinite; }

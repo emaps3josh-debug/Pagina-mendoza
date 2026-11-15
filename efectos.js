@@ -10,6 +10,7 @@
   const root = document.documentElement;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const S = window.SITIO || {};
+  let wake = () => {}; // despierta la barra de ondas (se define más abajo)
 
   /* ================= MÚSICA ================= */
   // Valores por defecto; lo que se guarde en el panel (Música) los reemplaza
@@ -82,13 +83,21 @@
     build();
     clearTimeout(stopTimer);
     try {
-      if (ctx && ctx.state === "suspended") await ctx.resume();
+      if (ctx && ctx.state !== "running") {
+        // Sin un toque del visitante el navegador puede dejar esto en espera: se da por bloqueado
+        await Promise.race([ctx.resume(), new Promise((r) => setTimeout(r, 700))]);
+        if (ctx.state !== "running") throw new Error("bloqueado por el navegador");
+      }
       await audio.play();
       playing = true;
       fadeTo(level(), 1.5);
       ui(); wake();
       return true;
-    } catch (e) { playing = false; ui(); return false; } // el navegador aún no deja sonar: se intenta en el siguiente toque
+    } catch (e) { // el navegador aún no deja sonar: se intenta en el siguiente toque
+      if (audio.paused) playing = false; // (si otro intento ya la arrancó, se respeta)
+      ui();
+      return playing;
+    }
   };
   const stop = () => {
     if (!audio) return;
@@ -117,26 +126,30 @@
       if (wanted) start(); else stop();
     });
 
-    // Los navegadores no dejan sonar nada hasta que el visitante toca la página:
-    // la música empieza sola en su primer toque (si no la apagó antes)
+    // La música intenta empezar sola al abrir la página. Muchos navegadores (sobre todo en celular)
+    // no dejan sonar nada hasta que el visitante toca la pantalla: en ese caso empieza en su
+    // primer toque, en cualquier parte. Deslizar no cuenta como toque para el navegador.
     const skip = ".music, video, .yt, .tk, [data-vurl], dialog";
-    const events = ["click", "touchend", "keydown"];
+    const events = ["pointerdown", "mousedown", "pointerup", "touchend", "click", "keydown"];
     const off = () => events.forEach((ev) => removeEventListener(ev, first, true));
+    let announced = false;
+    const announce = () => {
+      off();
+      if (pref || announced) return; // aviso solo la primera vez, para que sepan dónde apagarla
+      announced = true;
+      tip = document.createElement("p");
+      tip.className = "music__tip";
+      tip.textContent = "Música encendida · toca aquí para apagarla";
+      document.body.appendChild(tip);
+      setTimeout(() => { if (tip) { tip.remove(); tip = null; } }, 5200);
+    };
     async function first(e) {
       if (!wanted || playing) return off();
       if (e.target && e.target.closest && e.target.closest(skip)) return;
-      if (await start()) {
-        off();
-        if (!pref) { // aviso la primera vez, para que sepan dónde apagarla
-          tip = document.createElement("p");
-          tip.className = "music__tip";
-          tip.textContent = "Música encendida · toca aquí para apagarla";
-          document.body.appendChild(tip);
-          setTimeout(() => { if (tip) { tip.remove(); tip = null; } }, 5200);
-        }
-      }
+      if (await start()) announce();
     }
     events.forEach((ev) => addEventListener(ev, first, true));
+    if (wanted) start().then((ok) => { if (ok) announce(); }); // intento inmediato, sin esperar toque
 
     // Si se reproduce un video, la música se detiene y vuelve al terminar
     const duck = () => { if (playing) { ducked = true; stop(); } };
@@ -158,10 +171,42 @@
     ui();
   }
 
+  /* ================= COLOR DE CADA PAQUETE =================
+     Cada paquete tiene su color: borde, fondo, etiqueta y botón. Se elige en el panel
+     (Paquetes > Color del paquete); en "Automático" se usa el de esta lista. */
+  const TEMAS = { // nombre: [color principal, color claro, color del texto encima]
+    gris: ["#7d8ea3", "#c9d4e0", "#0a0a0b"],
+    plata: ["#b9c3cd", "#ffffff", "#0a0a0b"],
+    oro: ["#e0a92e", "#ffe08a", "#0a0a0b"],
+    morado: ["#8b5cf6", "#cdbdff", "#ffffff"],
+    azul: ["#2563ff", "#9bbcff", "#ffffff"],
+    cian: ["#06b6d4", "#a5f3fc", "#0a0a0b"],
+    rosa: ["#ec4899", "#fbcfe8", "#ffffff"],
+    verde: ["#22c55e", "#bbf7d0", "#0a0a0b"],
+    fucsia: ["#d946ef", "#f5d0fe", "#ffffff"],
+    rojo: ["#f43f5e", "#fbbf24", "#ffffff"],
+    naranja: ["#f97316", "#fed7aa", "#0a0a0b"],
+  };
+  const AUTO = { "p-basico": "gris", "p-plata": "plata", "p-oro": "oro", "p-premium": "morado", "p-elite": "azul", "p-plus": "cian", "p-exp": "rosa", "p-led": "verde", "p-pvip": "fucsia", "p-vip": "rojo" };
+  const temaKeys = Object.keys(TEMAS);
+  const packData = ((S.paquetes || {}).lista) || [];
+  $$(".pack").forEach((card, i) => {
+    const p = packData.find((x) => x.id === card.id) || {};
+    const key = TEMAS[p.color] ? p.color : AUTO[card.id] || temaKeys[i % temaKeys.length];
+    card.dataset.tema = key;
+    ["--pc", "--pc2", "--pt"].forEach((v, k) => card.style.setProperty(v, TEMAS[key][k]));
+    card.style.setProperty("--fx-n", i); // para que no giren todos al mismo tiempo
+  });
+
   /* ================= EFECTOS VISUALES ================= */
-  let wake = () => {};
   if (reduce) return; // con "reducir movimiento" se queda la página sin animaciones
   root.classList.add("fx");
+
+  // Las luces de los paquetes giran todo el tiempo, pero solo mientras están en pantalla
+  if ("IntersectionObserver" in window) {
+    const liveIO = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("live", e.isIntersecting)), { rootMargin: "80px 0px" });
+    $$(".pack").forEach((c) => liveIO.observe(c));
+  } else $$(".pack").forEach((c) => c.classList.add("live"));
 
   /* ---------- Barra de avance en forma de ondas ---------- */
   const cv = document.createElement("canvas");
