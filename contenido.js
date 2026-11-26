@@ -23,7 +23,7 @@ window.SITIO = {
   "paquetes": {
     "titulo": "Elige el paquete",
     "resaltado": "para tu evento",
-    "destacados": ["p-oro", "p-elite", "p-plus"],
+    "destacados": ["p-plus", "p-elite", "p-oro"],
     "recomendado": "p-plus",
     "avisoFuerte": "$500 de descuento de domingo a viernes",
     "avisoTexto": "en los paquetes Oro, Élite y Élite Plus. Los sábados el precio es fijo.",
@@ -140,7 +140,7 @@ window.SITIO = {
         "resaltado": "",
         "capTexto": "Hasta",
         "personas": 150,
-        "sabado": 4000,
+        "sabado": 0,
         "semana": 4000,
         "fijo": 0,
         "etiqueta": "",
@@ -572,7 +572,7 @@ window.SITIO = {
     "lista": [
       { "p": "¿Cuántas horas incluye el servicio?", "r": "Todos los paquetes incluyen 5 horas más 2 horas de regalo: 7 horas de servicio en total." },
       { "p": "¿Qué significa que el costo se respeta hasta las 12:00 am?", "r": "El precio del paquete aplica para eventos que terminan a más tardar a medianoche. Si tu evento termina después, pregúntanos por WhatsApp y lo revisamos." },
-      { "p": "¿Hay descuento entre semana?", "r": "Sí. De domingo a viernes los paquetes Oro, Élite y Élite Plus tienen $500 de descuento, y además están disponibles los paquetes Básico ($2,700) y Plata ($3,000), que no se rentan en sábado. El Premium cuesta $4,000 cualquier día. Los sábados el precio es fijo." },
+      { "p": "¿Hay descuento entre semana?", "r": "Sí. De domingo a viernes los paquetes Oro, Élite y Élite Plus tienen $500 de descuento, y además están disponibles los paquetes Básico ($2,700), Plata ($3,000) y Premium ($4,000), que no se rentan en sábado. Los sábados el precio es fijo." },
       { "p": "¿A qué hora llegan a montar?", "r": "Llegamos una hora antes del inicio para hacer el montaje, la conexión y las pruebas del equipo." },
       { "p": "¿Tengo que llenar yo el contrato?", "r": "No. El contrato es digital: tú solo nos compartes tus datos y nosotros lo llenamos y te lo enviamos." },
       { "p": "¿Puedo pedir mi música?", "r": "Sí. Manejamos variedad musical para todas las edades y puedes decirnos qué géneros y canciones quieres en tu evento." },
@@ -586,9 +586,10 @@ window.SITIO = {
     "texto": "Contamos con referencias y manejamos contrato."
   },
   "cotizacion": {
+    "tutorial": true,
     "guia1": "Toca «Elegir» en el paquete que más te guste. ¿No sabes cuál? Responde las 2 preguntas de abajo.",
     "guia2": "Agrega lo que quieras o toca «Continuar» si no necesitas extras.",
-    "guia3": "Llena tus datos y toca «Solicitar»: se abre WhatsApp con tu cotización lista para enviar.",
+    "guia3": "Escribe la fecha y la zona de tu fiesta y toca «Solicitar»: se abre WhatsApp con tu cotización lista para enviar.",
     "asistente": "¿No sabes cuál elegir?",
     "asistenteTexto": "Responde 2 preguntas y te decimos cuál te conviene.",
     "despues": "¿Qué pasa después de enviar?",
@@ -599,7 +600,7 @@ window.SITIO = {
     "extrasTitulo": "Los pequeños detalles también cuentan",
     "extrasTexto": "Toca para agregarlos. Los que no tienen precio te los confirmamos por WhatsApp.",
     "paso3": "Datos de tu evento",
-    "paso3Texto": "Solo lo necesario para preparar tu cotización.",
+    "paso3Texto": "Solo dos datos: la fecha y dónde será tu fiesta.",
     "nota": "Este es un total estimado. Tu fecha queda confirmada cuando revisamos disponibilidad y apartas con $500.",
     "boton": "Solicitar mi cotización",
     "tipos": ["Cumpleaños", "XV años", "Boda", "Bautizo o primera comunión", "Graduación", "Fiesta infantil", "Evento de empresa", "Otro"]

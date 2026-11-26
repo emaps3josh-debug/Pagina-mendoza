@@ -24,6 +24,12 @@ COTIZADOR EN 3 PASOS
 - Reglas: en la sección "Cotizador", "No ofrecerlo en" oculta una opción en los paquetes que ya
   la incluyen; "Ofrecerlo solo en" la muestra solo en ese paquete.
 - El total es estimado: la disponibilidad se confirma por WhatsApp.
+- TUTORIAL CON MANITA: una mano animada con un globo amarillo señala dónde tocar
+  (Encuentra tu paquete > Elegir > Continuar > fecha, invitados y nombre > Solicitar).
+  Si el botón no se ve, indica deslizar. Sale cada vez que se abre la página; con la ×
+  se oculta mientras siga abierta y vuelve con "Ver cómo cotizar paso a paso". Se apaga en el panel: Cotizador >
+  "Mostrar la manita de ayuda".
+- Asistente "¿No sabes cuál elegir?": 2 preguntas (invitados y día) y recomienda paquete.
 
 ============================================
 PUESTA EN MARCHA (una sola vez)

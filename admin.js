@@ -112,7 +112,13 @@
       const box = h("div", { class: "tags" }, OPTS.map(([v, t]) => {
         const i = h("input", { type: "checkbox" });
         i.checked = cur.has(v);
-        i.addEventListener("change", () => { i.checked ? cur.add(v) : cur.delete(v); o[f.key] = OPTS.map(([x]) => x).filter((x) => cur.has(x)); changed(); });
+        i.addEventListener("change", () => {
+          i.checked ? cur.add(v) : cur.delete(v);
+          // Con "enOrden" se respeta el orden en que se marcan (el que se marca al final va al final)
+          const prev = (Array.isArray(o[f.key]) ? o[f.key] : []).filter((x) => cur.has(x));
+          o[f.key] = f.enOrden ? prev.concat(i.checked && !prev.includes(v) ? [v] : []) : OPTS.map(([x]) => x).filter((x) => cur.has(x));
+          changed();
+        });
         return h("label", null, i, h("span", null, t));
       }));
       return h("div", { class: "fld" }, h("span", { class: "fld__l" }, f.label), box, f.hint ? h("small", { class: "fld__h" }, f.hint) : null);
@@ -300,7 +306,7 @@
       help: "Título de la sección, aviso de descuento, nombres de los dos grupos, lo que incluyen todos los paquetes y los renglones de la tabla para comparar.",
       fields: [
         ...titleFields("Elige el paquete", "para tu evento"),
-        { key: "destacados", label: "Paquetes al frente (máximo 3)", type: "tags", options: () => D.paquetes.lista.map((p) => [p.id, packName(p)]), hint: "Son los que se ven primero en el paso 1 del cotizador. Si marcas más de 3, se usan los primeros 3 de la lista." },
+        { key: "destacados", label: "Paquetes al frente (máximo 3)", type: "tags", enOrden: true, options: () => D.paquetes.lista.map((p) => [p.id, packName(p)]), hint: "Son los que se ven primero en el paso 1 del cotizador, en el orden en que los marques (orden actual: " + (D.paquetes.destacados || []).map((id) => { const p = D.paquetes.lista.find((x) => x.id === id); return p ? packName(p) : id; }).join(", ") + "). Para cambiar el orden, desmárcalos y vuelve a marcarlos en el orden que quieras." },
         { key: "recomendado", label: "Paquete recomendado", type: "select", options: () => [["", "Ninguno"]].concat(D.paquetes.lista.map((p) => [p.id, packName(p)])), hint: "Lleva la etiqueta \"Recomendado\" (debe ser uno de los de al frente)." },
         { key: "avisoFuerte", label: "Aviso: parte en negritas", ph: "$500 de descuento de domingo a viernes", hint: "Deja los dos campos del aviso vacíos para ocultarlo." },
         { key: "avisoTexto", label: "Aviso: resto del texto", type: "area", rows: 2 },
@@ -491,6 +497,7 @@
       fields: [{
         key: "cotizacion", type: "group", label: "Textos del cotizador",
         fields: [
+          { key: "tutorial", label: "Mostrar la manita de ayuda (tutorial que señala dónde tocar)", type: "check" },
           { key: "guia1", label: "Guía del paso 1", type: "area", rows: 2, hint: "Frase que orienta al cliente arriba de cada paso." },
           { key: "guia2", label: "Guía del paso 2", type: "area", rows: 2 },
           { key: "guia3", label: "Guía del paso 3", type: "area", rows: 2 },
@@ -503,7 +510,6 @@
           { key: "paso3", label: "Paso 3: título" }, { key: "paso3Texto", label: "Paso 3: texto", type: "area", rows: 2 },
           { key: "nota", label: "Aviso debajo del total", type: "area", rows: 2 },
           { key: "boton", label: "Texto del botón para enviar" },
-          { key: "tipos", label: "Tipos de evento", type: "lines", rows: 6, hint: "Un tipo por renglón." },
         ],
       }, {
         label: "Reglas de cada opción", hint: "Cada adicional o show se busca aquí por su nombre: \"No ofrecerlo en\" lo oculta en esos paquetes (porque ya lo incluyen). Si una opción no es un adicional (ej. pantalla de 58\"), aparece como opción extra con el precio de su nota.",

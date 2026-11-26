@@ -99,6 +99,7 @@
         <li><button type="button" data-go="3"><b>3</b><span>Tus datos</span></button></li>
       </ol>
       <p class="wiz__guide" id="wizGuide" aria-live="polite"></p>
+      <button type="button" class="wiz__tuto" id="tutoBtn" hidden><span aria-hidden="true">👆</span> Ver cómo cotizar paso a paso</button>
 
       <!-- Paso 1: paquete -->
       <div class="wiz__panel" data-step="1">
@@ -194,12 +195,9 @@
       <div class="wiz__panel" data-step="3" hidden>
         <div class="wiz__intro"><h3 id="wiz3T"></h3><p id="wiz3P"></p></div>
         <form class="wform" id="wizForm" novalidate>
-          <label>Fecha del evento <em>*</em><input type="date" name="fecha" required></label>
-          <label>Invitados aproximados <em>*</em><input type="number" name="invitados" min="1" max="3000" inputmode="numeric" placeholder="Ej. 120" required></label>
-          <label>Tipo de evento<select name="tipo" id="wizTipo"><option value="">Elige una opción</option></select></label>
-          <label>Lugar o colonia<input type="text" name="lugar" placeholder="Ej. Jardín en Cuernavaca" autocomplete="off"></label>
-          <label>Tu nombre <em>*</em><input type="text" name="nombre" autocomplete="name" required></label>
-          <label>Teléfono<input type="tel" name="telefono" autocomplete="tel" inputmode="tel" placeholder="10 dígitos (opcional)"></label>
+          <label><span>Fecha del evento <em>*</em></span><input type="date" name="fecha" required></label>
+          <label><span>Zona o colonia del evento <em>*</em></span><input type="text" name="lugar" placeholder="Ej. Jiutepec, centro de Cuernavaca" autocomplete="off" required></label>
+          <label class="wform__wide"><span>Tu nombre <small>(opcional)</small></span><input type="text" name="nombre" autocomplete="name"></label>
         </form>
         <p class="wiz__warn" id="wizWarn" aria-live="polite" hidden></p>
         <div class="wsum" id="wizSum"></div>

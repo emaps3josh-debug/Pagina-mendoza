@@ -2,7 +2,7 @@
    1. Elige tu paquete  2. Complementa tu evento  3. Datos del evento y envío por WhatsApp.
    - Los precios salen del contenido publicado (panel). Nada viene preseleccionado.
    - El precio del paquete cambia según el día; Básico, Plata y Premium no se ofrecen en sábado.
-   - La barra de snacks se calcula por persona con el número de invitados.
+   - Solo pide fecha, zona y nombre (opcional). La barra de snacks se cotiza "desde" su mínimo de personas.
    - Lo elegido se guarda en el navegador: si el cliente sale y vuelve, sigue ahí.
    - Es una cotización estimada: la disponibilidad se confirma por WhatsApp. */
 (() => {
@@ -37,6 +37,7 @@
   st.sel = (Array.isArray(st.sel) ? st.sel : []).filter((k) => known.has(k));
   st.f = st.f && typeof st.f === "object" ? st.f : {};
   st.h = st.h && typeof st.h === "object" ? st.h : {};
+  ["invitados", "tipo", "telefono"].forEach((k) => delete st.f[k]); // campos que ya no se piden
   const CZ = S.cotizacion || {};
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* sin espacio */ } };
 
@@ -92,7 +93,7 @@
       if (ip.tbd) { tbd.push(name); return; }
       total += ip.n;
       if (ip.desde) desde = true;
-      lines.push({ name, n: ip.n, detail: ip.people ? ip.people + " personas × " + money(ip.unit) : "", chip: el.classList.contains("qchip") });
+      lines.push({ name, n: ip.n, desde: !!ip.desde, detail: ip.people ? (ip.desde ? money(ip.unit) + " por persona, mínimo " + ip.people : ip.people + " personas × " + money(ip.unit)) : "", chip: el.classList.contains("qchip") });
     });
     return { p, pp, total, desde, lines, tbd };
   };
@@ -142,7 +143,7 @@
     const dn = $("#dockN");
     if (dn) { const c = (p ? 1 : 0) + n; dn.hidden = !c; dn.textContent = c; }
     // Formulario y resumen (paso 3)
-    if (form) ["fecha", "invitados", "tipo", "lugar", "nombre", "telefono"].forEach((k) => { const i = form.elements[k]; if (i && document.activeElement !== i && i.value !== (st.f[k] || "")) i.value = st.f[k] || ""; });
+    if (form) ["fecha", "lugar", "nombre"].forEach((k) => { const i = form.elements[k]; if (i && document.activeElement !== i && i.value !== (st.f[k] || "")) i.value = st.f[k] || ""; });
     renderSummary(t);
     save();
   };
@@ -150,7 +151,7 @@
   const renderSummary = (t) => {
     const p = t.p, rows = [];
     if (p) rows.push(["Paquete " + p.name + (t.pp.label ? " (" + t.pp.label + ")" : ""), t.pp.blocked ? "No disponible" : (t.pp.desde ? "Desde " : "") + money(t.pp.n)]);
-    t.lines.forEach((l) => rows.push([l.name + (l.detail ? " · " + l.detail : ""), money(l.n)]));
+    t.lines.forEach((l) => rows.push([l.name + (l.detail ? " · " + l.detail : ""), (l.desde ? "Desde " : "") + money(l.n)]));
     t.tbd.forEach((name) => rows.push([name, "Por confirmar"]));
     sum.innerHTML = p
       ? '<h4>Tu selección</h4><ul>' + rows.map(([a, b]) => "<li><span>" + window.MZ.esc(a) + "</span><b>" + b + "</b></li>").join("") + "</ul>" +
@@ -228,8 +229,7 @@
     if (!t.p) return { msg: "Elige un paquete para continuar.", step: 1 };
     if (t.pp.blocked) return { msg: "El paquete elegido no se renta en sábado: cambia la fecha o el paquete.", field: "fecha" };
     if (!st.f.fecha) return { msg: "Escribe la fecha de tu evento.", field: "fecha" };
-    if (!guests()) return { msg: "Escribe cuántos invitados tendrás, aunque sea aproximado.", field: "invitados" };
-    if (!String(st.f.nombre || "").trim()) return { msg: "Escribe tu nombre.", field: "nombre" };
+    if (!String(st.f.lugar || "").trim()) return { msg: "Escribe la zona o colonia de tu evento.", field: "lugar" };
     return null;
   };
   const message = () => {
@@ -237,17 +237,14 @@
     L.push("Hola, quiero cotizar mi evento con Mendoza Sonido y DJ.");
     if (f.nombre) L.push("Nombre: " + f.nombre.trim());
     L.push("Paquete: " + t.p.name + " (" + money(t.pp.n) + (t.pp.label ? ", " + t.pp.label : "") + ")");
-    const extras = t.lines.filter((l) => !l.chip).map((l) => l.name + (l.detail ? " (" + l.detail + " = " + money(l.n) + ")" : " (" + money(l.n) + ")"));
+    const extras = t.lines.filter((l) => !l.chip).map((l) => l.name + (l.detail ? " (" + l.detail + (l.desde ? ": desde " : " = ") + money(l.n) + ")" : " (" + money(l.n) + ")"));
     const small = t.lines.filter((l) => l.chip).map((l) => l.name + " (" + money(l.n) + ")");
     const tbd = t.tbd.map((x) => x + " (precio por confirmar)");
     if (extras.length) L.push("Adicionales: " + extras.join("; "));
     if (small.length || tbd.length) L.push("Extras: " + small.concat(tbd).join("; "));
-    L.push("Total estimado: " + money(t.total));
+    L.push("Total estimado: " + (t.desde ? "desde " : "") + money(t.total));
     if (f.fecha) L.push("Fecha: " + (day >= 0 ? DAYS[day] + " " : "") + f.fecha.split("-").reverse().join("/"));
-    if (guests()) L.push("Invitados: " + guests());
-    if (f.tipo) L.push("Tipo de evento: " + f.tipo);
-    if (f.lugar) L.push("Lugar: " + f.lugar.trim());
-    if (f.telefono) L.push("Teléfono: " + f.telefono.trim());
+    if (f.lugar) L.push("Zona: " + f.lugar.trim());
     L.push("¿Tienen disponible esa fecha?");
     return L.join("\n");
   };
@@ -339,4 +336,138 @@
   };
 
   render();
+
+  /* ---------- Tutorial con manita ----------
+     Una mano animada señala dónde tocar en cada momento, con un globo que dice qué hacer:
+     portada → "Elegir" → "Continuar" → fecha y zona → "Solicitar".
+     Sale cada vez que se abre la página; con la × se oculta solo mientras siga abierta
+     (vuelve con "Ver cómo cotizar" o al abrir la página otra vez).
+     Se apaga en el panel: Cotizador > "Mostrar la manita de ayuda". */
+  if (CZ.tutorial === false) return;
+  const TUTO_KEY = "mendoza-tuto";
+  let tutoOn = true;
+  try { tutoOn = sessionStorage.getItem(TUTO_KEY) !== "off"; localStorage.removeItem(TUTO_KEY); } catch (e) { /* sin almacenamiento */ }
+  const tutoBtn = $("#tutoBtn");
+
+  const hand = document.createElement("div");
+  hand.className = "tuto";
+  hand.setAttribute("aria-hidden", "true");
+  hand.innerHTML = '<span class="tuto__ring"></span><svg class="tuto__hand" viewBox="0 -2 54 66"><path d="M17 5a5 5 0 0 1 10 0v19.5l1.6-.3a5 5 0 0 1 6 3.3l.4-.1a5 5 0 0 1 6.2 3.5l.5-.1a5 5 0 0 1 6 4.9V46c0 7.7-6.3 14-14 14h-6.4c-4 0-7.8-1.8-10.3-5L3.6 44.6a5 5 0 0 1 7.3-6.8L17 43.4V5Z"/></svg>';
+  const bubble = document.createElement("div");
+  bubble.className = "tuto__bubble";
+  bubble.setAttribute("role", "status");
+  bubble.innerHTML = '<p class="tuto__txt"></p><button type="button" class="tuto__x" aria-label="Ocultar la guía">×</button>';
+  document.body.append(hand, bubble);
+  const tTxt = $(".tuto__txt", bubble);
+
+  const inView = (el) => {
+    if (!el || el.hidden || !el.offsetParent) return false;
+    const r = el.getBoundingClientRect();
+    const bottom = innerHeight - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--dock-h")) || 0);
+    return r.width > 0 && r.top >= 64 && r.bottom <= bottom - 8;
+  };
+  const visibleBtn = (sel) => $$(sel).find(inView);
+  const shown = (el) => !!(el && !el.hidden && el.offsetParent); // existe y no está escondido (aunque esté fuera de la pantalla)
+  const firstEmpty = () => ["fecha", "lugar"].find((k) => !String(st.f[k] || "").trim());
+  const FIELD_TXT = { fecha: "Escribe la <b>fecha</b> de tu fiesta 📅", lugar: "Escribe la <b>zona o colonia</b> de tu fiesta 📍" };
+
+  // Qué hay que tocar ahora: [elemento, texto]
+  const target = () => {
+    if (document.querySelector("dialog[open]")) return null;
+    const hb = $("#heroBtn");
+    if (!st.pack && inView(hb) && wiz.getBoundingClientRect().top > innerHeight * 0.6) return [hb, "¡Hola! 👋 Toca aquí para <b>empezar a cotizar</b>"];
+    if (st.step === 1) {
+      if (st.pack) return [visibleBtn("#wizBarGo, [data-step=\"1\"] .is-sel [data-pick]") || $("#wizBarGo"), "¡Muy bien! 🎉 Ahora toca <b>Continuar</b>"];
+      const rec = (S.paquetes || {}).recomendado;
+      const el = visibleBtn(".pack--pick [data-pick]") || $(".pack--pick[data-pid=\"" + rec + "\"] [data-pick]") || $(".pack--pick [data-pick]");
+      return [el, "<b>Paso 1:</b> toca <b>Elegir</b> en el paquete que te guste 🎵"];
+    }
+    if (st.step === 2) {
+      const el = visibleBtn("[data-step=\"2\"] .wiz__nav .btn--main") || visibleBtn("#wizBarGo") || $("[data-step=\"2\"] .wiz__nav .btn--main");
+      return [el, "<b>Paso 2:</b> si quieres algo extra toca <b>Agregar</b>. Cuando termines, toca <b>Continuar</b> 👉"];
+    }
+    if (st.step === 3) {
+      const k = firstEmpty();
+      if (k) return [form && form.elements[k], "<b>Paso 3:</b> " + FIELD_TXT[k]];
+      return [$("#wizSend"), "<b>¡Último paso!</b> Toca aquí para <b>enviar tu cotización</b> por WhatsApp 📲"];
+    }
+    return null;
+  };
+
+  let lastEl = null, lastTxt = "", swipeTo = null;
+  const hide = () => { hand.classList.remove("is-on"); bubble.classList.remove("is-on"); if (lastEl) lastEl.classList.remove("tuto-on"); lastEl = null; swipeTo = null; };
+  const setText = (s) => { if (s !== lastTxt) { tTxt.innerHTML = s; lastTxt = s; } };
+  const place = () => {
+    const t = tutoOn ? target() : null;
+    const el = t && t[0];
+    if (!shown(el)) return hide();
+    // Lo que hay que tocar no se ve: la mano enseña a deslizar hacia donde está
+    if (!inView(el)) {
+      const wr = wiz.getBoundingClientRect();
+      if (wr.bottom < 80) return hide(); // ya pasó el cotizador (está viendo fotos o preguntas): no estorbar
+      if (lastEl) { lastEl.classList.remove("tuto-on"); lastEl = null; }
+      const down = el.getBoundingClientRect().top > 64;
+      swipeTo = el;
+      setText((down ? "Desliza hacia <b>abajo</b> 👇" : "Desliza hacia <b>arriba</b> 👆") + "<small>" + t[1].replace(/<[^>]+>/g, "") + "</small>");
+      const dock = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--dock-h")) || 0;
+      const hx = innerWidth / 2, hy = innerHeight - dock - 130;
+      hand.classList.add("is-swipe");
+      hand.classList.toggle("is-up", !down);
+      hand.style.transform = "translate(" + Math.round(hx - 19) + "px," + Math.round(hy) + "px)";
+      const bw = Math.min(280, innerWidth - 24);
+      bubble.style.width = bw + "px";
+      const bh = bubble.offsetHeight || 70;
+      bubble.style.transform = "translate(" + Math.round((innerWidth - bw) / 2) + "px," + Math.round(hy - bh - 16) + "px)";
+      bubble.classList.remove("is-below");
+      bubble.classList.add("is-swipe");
+      bubble.style.setProperty("--tip", Math.round(bw / 2) + "px");
+      hand.classList.add("is-on"); bubble.classList.add("is-on");
+      return;
+    }
+    swipeTo = null;
+    hand.classList.remove("is-swipe", "is-up");
+    bubble.classList.remove("is-swipe");
+    if (lastEl && lastEl !== el) lastEl.classList.remove("tuto-on");
+    if (el !== lastEl) el.classList.add("tuto-on");
+    lastEl = el;
+    setText(t[1]);
+    const r = el.getBoundingClientRect();
+    const isField = /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName);
+    // La punta del dedo cae sobre el botón (en los campos, a la derecha para no tapar lo que se escribe)
+    const x = isField ? r.right - 34 : r.left + r.width / 2;
+    const y = r.top + r.height * 0.55;
+    hand.style.transform = "translate(" + Math.round(x - 19) + "px," + Math.round(y) + "px)";
+    // El globo va arriba del botón si hay espacio; si no, abajo
+    const bw = Math.min(280, innerWidth - 24);
+    bubble.style.width = bw + "px";
+    const bh = bubble.offsetHeight || 70;
+    const above = r.top - bh - 14 > 70;
+    const bx = Math.max(12, Math.min(innerWidth - bw - 12, r.left + r.width / 2 - bw / 2));
+    const by = above ? r.top - bh - 14 : r.bottom + 62;
+    bubble.style.transform = "translate(" + Math.round(bx) + "px," + Math.round(Math.min(by, innerHeight - bh - 8)) + "px)";
+    bubble.classList.toggle("is-below", !above);
+    bubble.style.setProperty("--tip", Math.round(Math.max(18, Math.min(bw - 18, r.left + r.width / 2 - bx))) + "px");
+    hand.classList.add("is-on");
+    bubble.classList.add("is-on");
+  };
+  let raf = 0;
+  const loop = () => { place(); raf = tutoOn && !document.hidden ? requestAnimationFrame(loop) : 0; };
+  const startTuto = () => { if (!raf) raf = requestAnimationFrame(loop); };
+  const setTuto = (on) => {
+    tutoOn = on;
+    try { sessionStorage.setItem(TUTO_KEY, on ? "on" : "off"); } catch (e) { /* sin almacenamiento */ }
+    if (tutoBtn) tutoBtn.hidden = on;
+    if (on) startTuto(); else place();
+  };
+  $(".tuto__x", bubble).addEventListener("click", (e) => { e.stopPropagation(); setTuto(false); });
+  // Tocar el globo cuando dice "desliza" lleva directo a donde hay que tocar
+  bubble.addEventListener("click", () => { if (swipeTo) swipeTo.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); });
+  if (tutoBtn) {
+    tutoBtn.hidden = tutoOn;
+    tutoBtn.addEventListener("click", () => { setTuto(true); go(1); }); // la guía empieza desde el paso 1
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && tutoOn) startTuto(); });
+  // Al enviar la cotización, la guía termina
+  send.addEventListener("click", () => setTimeout(() => { if (!$("#wizDone").hidden) setTuto(false); }, 50));
+  if (tutoOn) startTuto();
 })();

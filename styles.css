@@ -880,6 +880,8 @@ dialog::backdrop { background: rgba(10, 10, 11, 0.88); }
 .wform em { font-style: normal; color: var(--blue-ink); }
 .wform input, .wform select { font: inherit; font-size: 1rem; font-weight: 400; min-height: 50px; padding: 0.7rem 0.9rem; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: var(--ink); color: var(--text); color-scheme: dark; width: 100%; }
 .wform input:focus, .wform select:focus { outline: none; border-color: var(--blue-ink); box-shadow: 0 0 0 3px rgba(37, 99, 255, 0.25); }
+.wform__wide { grid-column: 1 / -1; }
+.wform small { font-weight: 400; color: var(--muted); }
 @media (max-width: 560px) { .wform { grid-template-columns: 1fr; } }
 .wiz__warn { margin-top: 1rem; padding: 0.8rem 1rem; border: 1px solid rgba(255, 177, 74, 0.5); border-radius: var(--r-sm); background: rgba(255, 177, 74, 0.08); color: var(--warn); font-size: 0.92rem; }
 .wsum { margin-top: 1.3rem; padding: 1.1rem 1.2rem; border: 1px solid var(--line-2); border-radius: var(--r); background: var(--surface); }
@@ -959,3 +961,47 @@ dialog::backdrop { background: rgba(10, 10, 11, 0.88); }
 .next li::before { content: counter(nx); grid-row: span 2; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--blue-ink); color: var(--blue-ink); font-size: 0.85rem; font-weight: 700; }
 .next b { font-size: 0.95rem; }
 .next span { font-size: 0.86rem; color: var(--muted); }
+
+/* =====================================================================
+   TUTORIAL CON MANITA
+   cotizador.js mueve la mano y el globo encima de lo que hay que tocar.
+   ===================================================================== */
+.tuto, .tuto__bubble { position: fixed; left: 0; top: 0; z-index: 59; pointer-events: none; opacity: 0; transition: opacity 0.25s ease, transform 0.35s var(--ease); }
+.tuto.is-on, .tuto__bubble.is-on { opacity: 1; }
+.tuto { width: 46px; height: 56px; will-change: transform; }
+.tuto__hand { position: absolute; inset: 0; width: 46px; height: 56px; overflow: visible; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55)); transform-origin: 19px 2px; animation: tuto-tap 1.3s ease-in-out infinite; }
+.tuto__hand path { fill: #fff; stroke: #0a0a0b; stroke-width: 2.6; stroke-linejoin: round; }
+@keyframes tuto-tap { 0%, 100% { transform: translate(6px, 16px) rotate(-14deg); } 45% { transform: translate(0, 0) rotate(-14deg) scale(0.92); } 55% { transform: translate(0, 0) rotate(-14deg) scale(0.92); } }
+/* Onda donde toca el dedo */
+.tuto__ring { position: absolute; left: 19px; top: 2px; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 3px solid #ffd54a; opacity: 0; animation: tuto-ring 1.3s ease-out infinite; }
+@keyframes tuto-ring { 0%, 40% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+/* Globo con la instrucción */
+.tuto__bubble { pointer-events: none; padding: 0.75rem 2.4rem 0.8rem 1rem; border-radius: 16px; background: #ffd54a; color: #1a1300; font-size: 0.98rem; line-height: 1.35; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5); }
+/* El globo deja tocar lo que hay debajo (solo la × y el modo "desliza" se pueden tocar) */
+.tuto__bubble.is-on { animation: tuto-bounce 2.6s ease-in-out infinite; }
+.tuto__bubble.is-on .tuto__x, .tuto__bubble.is-on.is-swipe { pointer-events: auto; }
+.tuto__bubble b { font-weight: 800; }
+.tuto__bubble::after { content: ""; position: absolute; left: var(--tip, 50%); bottom: -9px; width: 18px; height: 18px; margin-left: -9px; background: #ffd54a; transform: rotate(45deg); border-radius: 3px; }
+.tuto__bubble.is-below::after { bottom: auto; top: -9px; }
+@keyframes tuto-bounce { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+/* Modo "desliza": la mano sube y baja como deslizando la pantalla */
+.tuto.is-swipe .tuto__hand { animation: tuto-swipe 1.5s ease-in-out infinite; }
+.tuto.is-swipe.is-up .tuto__hand { animation-name: tuto-swipe-up; }
+.tuto.is-swipe .tuto__ring { display: none; }
+@keyframes tuto-swipe { 0% { transform: translate(0, 30px); opacity: 0; } 20% { opacity: 1; } 80% { transform: translate(0, -24px); opacity: 1; } 100% { transform: translate(0, -24px); opacity: 0; } }
+@keyframes tuto-swipe-up { 0% { transform: translate(0, -24px); opacity: 0; } 20% { opacity: 1; } 80% { transform: translate(0, 30px); opacity: 1; } 100% { transform: translate(0, 30px); opacity: 0; } }
+.tuto__bubble small { display: block; margin-top: 0.25rem; font-size: 0.82rem; opacity: 0.85; }
+.tuto__bubble.is-swipe { cursor: pointer; }
+.tuto__x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; background: rgba(0, 0, 0, 0.12); color: #1a1300; font-size: 1.2rem; line-height: 1; }
+.tuto__x:hover { background: rgba(0, 0, 0, 0.25); }
+/* Lo que hay que tocar brilla en amarillo */
+.tuto-on { position: relative; z-index: 2; outline: 3px solid #ffd54a !important; outline-offset: 4px; animation: tuto-glow 1.3s ease-in-out infinite; }
+@keyframes tuto-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 213, 74, 0.55); } 50% { box-shadow: 0 0 0 10px rgba(255, 213, 74, 0); } }
+/* Botón para volver a ver la guía */
+.wiz__tuto { display: inline-flex; align-items: center; gap: 0.5rem; margin: -0.6rem 0 1.4rem; min-height: 42px; padding: 0.45rem 1rem; border: 1px dashed #ffd54a; border-radius: 999px; color: #ffd54a; font-size: 0.9rem; font-weight: 600; }
+.wiz__tuto:hover { background: rgba(255, 213, 74, 0.12); }
+@media (prefers-reduced-motion: reduce) {
+  .tuto, .tuto__bubble { transition: opacity 0.2s; }
+  .tuto__hand { animation: none !important; transform: translate(4px, 10px) rotate(-14deg); }
+  .tuto__ring, .tuto__bubble.is-on, .tuto-on { animation: none !important; }
+}
