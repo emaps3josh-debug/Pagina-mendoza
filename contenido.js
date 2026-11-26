@@ -14,14 +14,17 @@ window.SITIO = {
     "pie": "Precios en pesos mexicanos, sujetos a cambio y disponibilidad de fecha."
   },
   "portada": {
-    "titulo": "Música, ambiente y diversión",
-    "resaltado": "en tus eventos",
-    "texto": "Sonido profesional, iluminación y DJ animador. Con contrato, referencias y 7 horas de servicio en todos los paquetes.",
+    "titulo": "Tu evento merece",
+    "resaltado": "una gran experiencia",
+    "texto": "Sonido, DJ y experiencias para celebrar.",
+    "boton": "Encuentra tu paquete",
     "foto": "assets/img/montaje-luces.jpg"
   },
   "paquetes": {
     "titulo": "Elige el paquete",
     "resaltado": "para tu evento",
+    "destacados": ["p-oro", "p-elite", "p-plus"],
+    "recomendado": "p-plus",
     "avisoFuerte": "$500 de descuento de domingo a viernes",
     "avisoTexto": "en los paquetes Oro, Élite y Élite Plus. Los sábados el precio es fijo.",
     "grupos": [
@@ -137,8 +140,8 @@ window.SITIO = {
         "resaltado": "",
         "capTexto": "Hasta",
         "personas": 150,
-        "sabado": 0,
-        "semana": 3500,
+        "sabado": 4000,
+        "semana": 4000,
         "fijo": 0,
         "etiqueta": "",
         "destacado": false,
@@ -447,6 +450,9 @@ window.SITIO = {
         "fotoAlt": "Barra de snacks blanca con luces, montada en un jardín",
         "icono": "i-snack",
         "precio": 50,
+        "porPersona": true,
+        "minimo": 50,
+        "promoDesde": 101,
         "precioNota": "Por persona, a partir de 50 personas",
         "promo": 45,
         "promoNota": "Por persona, si son más de 100 personas",
@@ -566,7 +572,7 @@ window.SITIO = {
     "lista": [
       { "p": "¿Cuántas horas incluye el servicio?", "r": "Todos los paquetes incluyen 5 horas más 2 horas de regalo: 7 horas de servicio en total." },
       { "p": "¿Qué significa que el costo se respeta hasta las 12:00 am?", "r": "El precio del paquete aplica para eventos que terminan a más tardar a medianoche. Si tu evento termina después, pregúntanos por WhatsApp y lo revisamos." },
-      { "p": "¿Hay descuento entre semana?", "r": "Sí. De domingo a viernes los paquetes Oro, Élite y Élite Plus tienen $500 de descuento, y además están disponibles los paquetes Básico ($2,700), Plata ($3,000) y Premium ($3,500), que no se rentan en sábado. Los sábados el precio es fijo." },
+      { "p": "¿Hay descuento entre semana?", "r": "Sí. De domingo a viernes los paquetes Oro, Élite y Élite Plus tienen $500 de descuento, y además están disponibles los paquetes Básico ($2,700) y Plata ($3,000), que no se rentan en sábado. El Premium cuesta $4,000 cualquier día. Los sábados el precio es fijo." },
       { "p": "¿A qué hora llegan a montar?", "r": "Llegamos una hora antes del inicio para hacer el montaje, la conexión y las pruebas del equipo." },
       { "p": "¿Tengo que llenar yo el contrato?", "r": "No. El contrato es digital: tú solo nos compartes tus datos y nosotros lo llenamos y te lo enviamos." },
       { "p": "¿Puedo pedir mi música?", "r": "Sí. Manejamos variedad musical para todas las edades y puedes decirnos qué géneros y canciones quieres en tu evento." },
@@ -579,6 +585,34 @@ window.SITIO = {
     "resaltado": "con $500",
     "texto": "Contamos con referencias y manejamos contrato."
   },
+  "cotizacion": {
+    "guia1": "Toca «Elegir» en el paquete que más te guste. ¿No sabes cuál? Responde las 2 preguntas de abajo.",
+    "guia2": "Agrega lo que quieras o toca «Continuar» si no necesitas extras.",
+    "guia3": "Llena tus datos y toca «Solicitar»: se abre WhatsApp con tu cotización lista para enviar.",
+    "asistente": "¿No sabes cuál elegir?",
+    "asistenteTexto": "Responde 2 preguntas y te decimos cuál te conviene.",
+    "despues": "¿Qué pasa después de enviar?",
+    "paso1": "Elige tu paquete",
+    "paso1Texto": "Estos son los más pedidos. Si buscas otra opción, abajo puedes ver y comparar todos.",
+    "paso2": "Haz que tu celebración sea todavía más especial",
+    "paso2Texto": "Agrega lo que quieras o continúa sin extras. El total se actualiza solo.",
+    "extrasTitulo": "Los pequeños detalles también cuentan",
+    "extrasTexto": "Toca para agregarlos. Los que no tienen precio te los confirmamos por WhatsApp.",
+    "paso3": "Datos de tu evento",
+    "paso3Texto": "Solo lo necesario para preparar tu cotización.",
+    "nota": "Este es un total estimado. Tu fecha queda confirmada cuando revisamos disponibilidad y apartas con $500.",
+    "boton": "Solicitar mi cotización",
+    "tipos": ["Cumpleaños", "XV años", "Boda", "Bautizo o primera comunión", "Graduación", "Fiesta infantil", "Evento de empresa", "Otro"]
+  },
+  "extrasChicos": [
+    { "nombre": "Batucada", "precio": 350, "nota": "6 piezas de cada accesorio", "grupo": "batucada", "noEn": "Premium VIP|Élite VIP", "soloEn": "" },
+    { "nombre": "Batucada doble", "precio": 500, "nota": "12 piezas de cada accesorio", "grupo": "batucada", "noEn": "Premium VIP|Élite VIP", "soloEn": "" },
+    { "nombre": "Máquina de burbujas", "precio": 0, "nota": "", "grupo": "", "noEn": "", "soloEn": "" },
+    { "nombre": "Velas chisperas", "precio": 0, "nota": "", "grupo": "", "noEn": "", "soloEn": "" },
+    { "nombre": "Globos largos", "precio": 0, "nota": "", "grupo": "", "noEn": "", "soloEn": "" },
+    { "nombre": "Accesorios LED", "precio": 0, "nota": "", "grupo": "", "noEn": "", "soloEn": "" },
+    { "nombre": "Pista iluminada", "precio": 0, "nota": "", "grupo": "", "noEn": "", "soloEn": "" }
+  ],
   "musica": {
     "activa": true,
     "auto": true,

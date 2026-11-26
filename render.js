@@ -10,7 +10,7 @@
   if (isDraft) {
     try {
       const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
-      if (d) S = window.SITIO = d;
+      if (d) S = window.SITIO = window.completarSitio ? window.completarSitio(d, window.SITIO_BASE || {}) : d;
     } catch (e) { /* sin borrador: se muestra lo publicado */ }
   }
 
@@ -72,17 +72,19 @@
   heading("#heroTitle", P.titulo, P.resaltado);
   text("#heroLead", P.texto);
   if (P.foto && el("#heroBg")) el("#heroBg").src = P.foto;
+  if (P.boton && el("#heroBtn")) el("#heroBtn").firstChild.textContent = P.boton + " ";
 
   /* ---------- Paquetes ---------- */
   const Q = S.paquetes || {};
   const packs = list(Q.lista);
   const packName = (p) => (p.nombre || "") + (p.resaltado ? " " + p.resaltado : "");
-  const single = (p) => +p.fijo || (+p.sabado && !+p.semana ? +p.sabado : 0); // un solo precio
+  const single = (p) => +p.fijo || (+p.sabado && (!+p.semana || +p.semana === +p.sabado) ? +p.sabado : 0); // un solo precio (también si cuesta igual cualquier día)
   const lowest = (p) => single(p) || Math.min(...[+p.sabado, +p.semana].filter(Boolean));
 
-  const packCard = (p) => {
+  // pick = tarjeta del paso 1 del cotizador (no lleva id para no repetirlo); rec = recomendado
+  const packCard = (p, pick, rec) => {
     const fijo = single(p), soloSemana = !fijo && !+p.sabado;
-    const badge = p.etiqueta || (soloSemana ? "Solo domingo a viernes" : "");
+    const badge = (rec ? "Recomendado" : "") || p.etiqueta || (soloSemana ? "Solo domingo a viernes" : "");
     const thumb = p.miniatura || (list(p.fotos)[0] || {}).foto || "";
     const name = packName(p);
     let cost;
@@ -93,7 +95,7 @@
       const hl = /^\s*\+\s*/.test(l);
       return "<li" + (hl ? ' class="hl"' : "") + ">" + rich(String(l).replace(/^\s*\+\s*/, "")) + "</li>";
     }).join("");
-    return '<article class="pack' + (p.destacado ? " pack--top" : "") + '" id="' + esc(p.id) + '" data-tags="' + esc(list(p.incluye).join(" ")) + '" data-keys="' + esc((p.buscar || "") + " precio costo cuánto cuesta") + '">' +
+    return '<article class="pack' + (pick ? " pack--pick" + (rec ? " pack--rec" : "") : "") + (p.destacado ? " pack--top" : "") + '" ' + (pick ? "data-pid" : "id") + '="' + esc(p.id) + '" data-tags="' + esc(list(p.incluye).join(" ")) + '" data-keys="' + esc((p.buscar || "") + " precio costo cuánto cuesta") + '">' +
       (thumb ? '<img class="pack__thumb" src="' + esc(thumb) + '" alt="" loading="lazy" decoding="async">' : "") +
       '<div class="pack__body">' +
         (badge ? '<span class="pack__badge">' + esc(badge) + "</span>" : "") +
@@ -106,8 +108,11 @@
       (p.nota ? '<p class="pack__extra">' + rich(p.nota) + "</p>" : "") +
       videoBtn("pack__video", p.video, "Paquete " + name, "Ver video del paquete", thumb) +
       '<div class="pack__actions">' +
-        '<button type="button" class="btn btn--ghost" data-view>Ver detalles</button>' +
-        '<a class="btn btn--pack" data-pack="' + esc(name) + '" href="#">Cotizar <span class="arrow">→</span></a>' +
+        (pick
+          ? '<button type="button" class="btn btn--ghost" data-pview="' + esc(p.id) + '">Ver detalles</button>' +
+            '<button type="button" class="btn btn--pack" data-pick="' + esc(p.id) + '">Elegir <span class="arrow">→</span></button>'
+          : '<button type="button" class="btn btn--ghost" data-view>Ver detalles</button>' +
+            '<a class="btn btn--pack" data-pack="' + esc(name) + '" href="#">Elegir <span class="arrow">→</span></a>') +
       "</div></article>";
   };
 
@@ -132,7 +137,7 @@
   heading("#paqTitle", Q.titulo, Q.resaltado);
   html("#grupos", groups.map(({ g, items }, i) =>
     '<div class="pgroup" id="' + esc(g.id) + '"><header class="pgroup__head"><h3>' + esc(g.titulo) + "</h3><p>" + esc(g.texto) + "</p></header>" +
-    '<div class="packs' + (items.length % 4 === 0 && items.length % 3 !== 0 ? " packs--4" : "") + '">' + items.map(packCard).join("") + "</div>" +
+    '<div class="packs' + (items.length % 4 === 0 && items.length % 3 !== 0 ? " packs--4" : "") + '">' + items.map((p) => packCard(p)).join("") + "</div>" +
     (i === 0 ? compareTable(items) : "") + "</div>").join(""));
   const deal = el("#deal");
   if (deal) {
@@ -253,6 +258,94 @@
   /* ---------- Cotizador: lista de adicionales ---------- */
   html("#qGrid", list(S.cotizador).filter((x) => x.nombre).map((x) =>
     '<label class="qx"' + (x.noEn ? ' data-not="' + esc(x.noEn) + '"' : "") + (x.soloEn ? ' data-only="' + esc(x.soloEn) + '"' : "") + '><input type="checkbox" value="' + esc(x.mensaje || x.nombre) + '"><span><b>' + esc(x.nombre) + "</b>" + (x.nota ? "<small>" + esc(x.nota) + "</small>" : "") + "</span></label>").join(""));
+
+  /* ---------- Cotizador en 3 pasos (aquí se dibuja; la lógica está en cotizador.js) ----------
+     Usa los mismos datos de la página: paquetes, adicionales, shows y "pequeños extras".
+     Las reglas de la sección "Cotizador" del panel (No ofrecerlo en / Solo en) deciden qué se
+     ofrece con cada paquete. */
+  const CZ = S.cotizacion || {};
+  if (el("#wiz")) {
+    // Paso 1: paquetes destacados (máximo 3) y acceso a todos
+    const featIds = list(Q.destacados).filter((id) => packs.some((p) => p.id === id)).slice(0, 3);
+    const feat = featIds.length ? featIds.map((id) => packs.find((p) => p.id === id)) : packs.slice(0, 3);
+    html("#pick", feat.map((p) => packCard(p, true, p.id === Q.recomendado)).join(""));
+    text("#wiz1T", CZ.paso1); text("#wiz1P", CZ.paso1Texto);
+    text("#verTodosT", "Ver los " + packs.length + " paquetes y comparar");
+    const kp = el("#kidPick");
+    if (kp) {
+      kp.hidden = !kidsOn;
+      if (kidsOn) kp.innerHTML = (K.foto ? '<img src="' + esc(K.foto) + '" alt="" loading="lazy" decoding="async">' : "") +
+        '<div class="kidpick__t"><b>¿Fiesta infantil?</b><span>Paquete ' + esc(kidsName) + " · " + money(K.precio) + " " + esc(K.precioNota) + "</span></div>" +
+        '<div class="kidpick__a"><a class="tbtn" href="#infantil">Ver</a><button type="button" class="btn btn--pack btn--sm" data-pick="infantil">Elegir</button></div>';
+    }
+
+    // Paso 2: adicionales, shows y opciones de cada paquete
+    const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/^show (del |de la |de )?/, "").replace(/[^a-z0-9]+/g, " ").trim();
+    const rules = list(S.cotizador).filter((r) => r.nombre);
+    const used = new Set();
+    const ruleFor = (name) => {
+      const n = norm(name);
+      const r = rules.find((x) => { const m = norm(x.nombre); return m && n && (m === n || m.includes(n) || n.includes(m)); });
+      if (r) used.add(r);
+      return r || {};
+    };
+    const firstMoney = (s) => { const m = String(s || "").replace(/,/g, "").match(/\$\s*(\d+)/); return m ? +m[1] : 0; };
+    const opts = [];
+    list(A.lista).filter((x) => x.nombre).forEach((x) => {
+      const r = ruleFor(x.nombre);
+      const notes = [x.precioNota, x.promoNota].join(" ");
+      const per = x.porPersona != null ? !!x.porPersona : /persona/i.test(notes); // precio por persona (barra de snacks)
+      const min = +x.minimo || (per ? +((String(x.precioNota || "") + " " + (x.texto || "")).match(/(\d+)\s*personas?/i) || [])[1] || 0 : 0);
+      let promoFrom = +x.promoDesde || 0;
+      if (!promoFrom && per && +x.promo) { const m = String(x.promoNota || "").match(/(\d+)/); if (m) promoFrom = +m[1] + (/m[aá]s de/i.test(x.promoNota) ? 1 : 0); }
+      opts.push({ key: x.id || norm(x.nombre), nombre: x.nombre, texto: x.texto, foto: x.foto, icono: x.icono, precio: +x.precio || 0, nota: x.precioNota, per, min, promo: +x.promo || 0, promoFrom, promoNota: x.promoNota, video: x.video, poster: x.foto, noEn: r.noEn, soloEn: r.soloEn, keys: x.buscar });
+    });
+    list(W.personajes).filter((c) => c.nombre).forEach((c, i) => {
+      const r = ruleFor(c.nombre);
+      opts.push({ key: "show-" + norm(c.nombre).replace(/ /g, "-"), nombre: c.nombre, texto: (c.duracion ? "Show de " + c.duracion + ". " : "") + (W.texto || ""), foto: c.portada || W.foto, icono: "i-star", precio: +c.precio || 0, video: c.video, poster: c.portada, noEn: r.noEn, soloEn: r.soloEn, keys: "show botarga personaje" });
+    });
+    // Opciones del panel que no son un adicional ni un show (ej. pantalla de 58", karaoke)
+    rules.filter((r) => !used.has(r)).forEach((r) => opts.push({ key: "op-" + norm(r.nombre).replace(/ /g, "-"), nombre: r.nombre, texto: r.nota, icono: "i-check", precio: firstMoney(r.nota), noEn: r.noEn, soloEn: r.soloEn }));
+
+    const priceLine = (o) => {
+      if (!o.precio) return '<p class="qopt__price is-tbd">Precio al cotizar</p>';
+      if (o.per) return '<p class="qopt__price"><b>' + money(o.precio) + "</b> por persona" + (o.min ? "<small>Desde " + o.min + " personas</small>" : "") + "</p>";
+      return '<p class="qopt__price"><b>' + money(o.precio) + "</b>" + (o.nota ? "<small>" + esc(o.nota) + "</small>" : "") + "</p>";
+    };
+    const promoLine = (o) => (o.promo ? '<p class="qopt__promo">' + money(o.promo) + (o.per ? " por persona" : "") + (o.promoNota ? " · " + esc(o.promoNota) : "") + "</p>" : "");
+    html("#qopts", opts.map((o) =>
+      '<article class="qopt" data-key="' + esc(o.key) + '" data-name="' + esc(o.nombre) + '" data-price="' + o.precio + '" data-per="' + (o.per ? 1 : 0) + '" data-min="' + (o.min || 0) +
+      '" data-promo="' + (o.promo || 0) + '" data-promo-from="' + (o.promoFrom || 0) + '" data-noen="' + esc(o.noEn || "") + '" data-solo="' + esc(o.soloEn || "") + '" data-keys="' + esc((o.keys || "") + " adicional extra agregar") + '">' +
+        (o.foto ? '<img class="qopt__img" src="' + esc(o.foto) + '" alt="" loading="lazy" decoding="async">' : '<span class="qopt__ico">' + ico(o.icono) + "</span>") +
+        '<div class="qopt__body"><h4>' + esc(o.nombre) + "</h4>" + (o.texto ? '<p class="qopt__txt">' + esc(o.texto) + "</p>" : "") + priceLine(o) + promoLine(o) + "</div>" +
+        '<div class="qopt__act">' + videoBtn("tbtn", o.video, o.nombre, "Video", o.poster) +
+          '<button type="button" class="qadd" aria-pressed="false"><span class="qadd__off">Agregar</span><span class="qadd__on">Agregado ✓</span></button></div>' +
+      "</article>").join(""));
+    text("#wiz2T", CZ.paso2); text("#wiz2P", CZ.paso2Texto);
+
+    // Pequeños extras: compactos, sin la misma importancia que los paquetes
+    const small = list(S.extrasChicos).filter((x) => x.nombre);
+    const qs = el("#qsmall");
+    if (qs) qs.hidden = !small.length;
+    text("#wizSmallT", CZ.extrasTitulo); text("#wizSmallP", CZ.extrasTexto);
+    html("#qchips", small.map((x, i) =>
+      '<button type="button" class="qchip" aria-pressed="false" data-key="chico-' + i + '" data-name="' + esc(x.nombre) + '" data-price="' + (+x.precio || 0) + '" data-group="' + esc(x.grupo || "") +
+      '" data-noen="' + esc(x.noEn || "") + '" data-solo="' + esc(x.soloEn || "") + '" data-keys="extra detalle">' +
+      '<span class="qchip__n">' + esc(x.nombre) + "</span><small>" + (+x.precio ? money(x.precio) + (x.nota ? " · " + esc(x.nota) : "") : "Precio al cotizar") + "</small></button>").join(""));
+
+    // Paso 3
+    text("#wiz3T", CZ.paso3); text("#wiz3P", CZ.paso3Texto); text("#wizNote", CZ.nota); text("#wizSendT", CZ.boton || "Solicitar mi cotización");
+    const tipo = el("#wizTipo");
+    if (tipo) list(CZ.tipos).forEach((t) => { const o = document.createElement("option"); o.value = o.textContent = t; tipo.appendChild(o); });
+    // Asistente del paso 1
+    if (CZ.asistente) text("#helpT", CZ.asistente);
+    text("#helpP", CZ.asistenteTexto);
+    // Qué pasa después de enviar: los pasos de "Cómo apartar" (sin el primero, que es cotizar)
+    const after = list((S.apartar || {}).pasos).filter((x) => x.titulo).slice(1);
+    html("#wizNext", after.length ? "<h4>" + esc(CZ.despues || "¿Qué pasa después de enviar?") + "</h4><ol>" + after.map((x) => "<li><b>" + esc(x.titulo) + "</b><span>" + esc(x.texto) + "</span></li>").join("") + "</ol>" : "");
+  }
+  // Para cotizador.js
+  window.MZ = { esc, money, num, ico, rich };
 
   /* ---------- Aviso de vista previa ---------- */
   if (isDraft) {

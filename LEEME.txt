@@ -11,6 +11,21 @@ QUÉ CAMBIÓ EN ESTA VERSIÓN
   y el panel descarga un archivo.
 
 ============================================
+COTIZADOR EN 3 PASOS
+============================================
+- La sección de paquetes ahora es un cotizador: 1) elige paquete, 2) agrega adicionales y
+  pequeños extras, 3) datos del evento y envío por WhatsApp con el total estimado.
+- Al frente se ven 3 paquetes (Paquetes > Más de paquetes > "Paquetes al frente" y
+  "Paquete recomendado"). Los demás, con el botón "Ver los 10 paquetes y comparar".
+- Los adicionales ya no tienen sección propia: aparecen en el paso 2 con su precio.
+- Pequeños extras: sección "Pequeños extras" del panel. Sin precio salen "Precio al cotizar"
+  y no se suman al total.
+- Barra de snacks: el precio se multiplica por los invitados (Adicionales > "precio por persona").
+- Reglas: en la sección "Cotizador", "No ofrecerlo en" oculta una opción en los paquetes que ya
+  la incluyen; "Ofrecerlo solo en" la muestra solo en ese paquete.
+- El total es estimado: la disponibilidad se confirma por WhatsApp.
+
+============================================
 PUESTA EN MARCHA (una sola vez)
 ============================================
 
@@ -76,6 +91,15 @@ VIDEOS
 - TikTok: usa el enlace largo (termina en /video/ y números).
 - También acepta la ruta de un .mp4 que ya esté en assets/video.
 
+MÚSICA Y EFECTOS
+- La canción (musica.mp3) suena bajito desde el primer toque del visitante; siempre hay un
+  botón para apagarla y se pausa sola al reproducir un video.
+- En el panel, sección "Música", se enciende o apaga, se cambia el volumen o el archivo.
+- Para cambiar de canción: sube otro .mp3 a GitHub junto a index.html y escribe su nombre
+  en el panel. Conviene que pese poco (128 kbps), porque el visitante la descarga con sus datos.
+- Usa solo música para la que tengas permiso de uso en una página pública.
+- Los efectos se apagan solos en teléfonos con "reducir movimiento" activado.
+
 SEGURIDAD
 - Los datos de firebase-config.js no son secretos: pueden estar en GitHub.
 - Quien protege tu contenido son las reglas de la base de datos: solo el correo que pusiste
@@ -95,7 +119,10 @@ ARCHIVOS
 - firebase-config.js  Datos de tu proyecto de Firebase (hay que llenarlo).
 - cargar.js           Trae el contenido publicado y arranca la página.
 - render.js           Dibuja la página con el contenido.
-- script.js           Menú, filtros, buscador, cotizador y ventanas.
+- script.js           Menú, filtros, buscador y ventanas.
+- cotizador.js        Cotizador en 3 pasos (total, reglas y envío por WhatsApp).
+- efectos.js          Música de fondo y animaciones (ondas, luces en bordes, reseñas, fotos).
+- musica.mp3          La canción de fondo.
 - styles.css          Colores y diseño.
 - admin.html, admin.js, admin.css   El panel.
 - database.rules.json Reglas de la base de datos (pon tu correo antes de pegarlas).

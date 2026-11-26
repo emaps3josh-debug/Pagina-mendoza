@@ -191,8 +191,9 @@
   const temaKeys = Object.keys(TEMAS);
   const packData = ((S.paquetes || {}).lista) || [];
   $$(".pack").forEach((card, i) => {
-    const p = packData.find((x) => x.id === card.id) || {};
-    const key = TEMAS[p.color] ? p.color : AUTO[card.id] || temaKeys[i % temaKeys.length];
+    const pid = card.id || card.dataset.pid; // las del paso 1 del cotizador usan data-pid
+    const p = packData.find((x) => x.id === pid) || {};
+    const key = TEMAS[p.color] ? p.color : AUTO[pid] || temaKeys[i % temaKeys.length];
     card.dataset.tema = key;
     ["--pc", "--pc2", "--pt"].forEach((v, k) => card.style.setProperty(v, TEMAS[key][k]));
     card.style.setProperty("--fx-n", i); // para que no giren todos al mismo tiempo
@@ -281,7 +282,7 @@
 
   /* ---------- Avisar a los estilos cuando algo entra en pantalla ---------- */
   // .lit = tarjetas que reciben una luz que recorre su borde
-  $$(".pack, .extra, .steps li, .always li, .finder, .reviews, .jump a, .deal, .compare, .kids__photo").forEach((el) => el.classList.add("lit"));
+  $$(".pack, .extra, .steps li, .always li, .finder, .reviews, .jump a, .deal, .compare, .kids__photo, .qopt, .kidpick, .wsum").forEach((el) => el.classList.add("lit"));
   const watch = $$(".section, .lit, .g, .steps, .opin li, .head, .cta__box, .pgroup__head");
   watch.forEach((el) => {
     const sibs = el.parentElement ? [...el.parentElement.children] : [];

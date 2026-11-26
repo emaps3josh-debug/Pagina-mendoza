@@ -45,9 +45,8 @@
   <nav class="nav__links" id="navLinks" aria-label="Secciones">
     <a href="#paquetes">Paquetes</a>
     <a href="#infantil">Infantil</a>
-    <a href="#adicionales">Adicionales</a>
+    <a href="#galeria">Eventos</a>
     <a href="#proceso">Cómo apartar</a>
-    <a href="#galeria">Galería</a>
     <a href="#preguntas">Preguntas</a>
     <a class="btn btn--wa nav__links-cta" data-wa="Hola, quiero cotizar mi evento con Mendoza Sonido y DJ." href="#"><svg class="ico"><use href="#i-wa"/></svg> Cotizar por WhatsApp</a>
   </nav>
@@ -71,30 +70,67 @@
     <h1 id="heroTitle">Música, ambiente y diversión <em>en tus eventos</em></h1>
     <p class="hero__lead" id="heroLead">Sonido profesional, iluminación y DJ animador. Con contrato, referencias y 7 horas de servicio en todos los paquetes.</p>
 
-    <button type="button" class="hero__search" data-search>
-      <svg class="ico"><use href="#i-search"/></svg>
-      <span>¿Qué buscas? Pantalla, shots, 150 personas…</span>
-    </button>
-
     <div class="hero__cta">
-      <a class="btn btn--wa" data-wa="Hola, quiero cotizar mi evento con Mendoza Sonido y DJ." href="#">
-        <svg class="ico"><use href="#i-wa"/></svg> Cotiza tu evento
-      </a>
-      <a class="btn btn--line" href="#paquetes">Ver paquetes <span class="arrow">→</span></a>
+      <a class="btn btn--main btn--lg" id="heroBtn" href="#paquetes">Encuentra tu paquete <span class="arrow">→</span></a>
     </div>
+    <ol class="hero__how" aria-label="Cómo funciona">
+      <li><b>1</b>Elige tu paquete</li>
+      <li><b>2</b>Personalízalo</li>
+      <li><b>3</b>Recibe tu cotización por WhatsApp</li>
+    </ol>
+    <a class="hero__alt" data-wa="Hola, quiero cotizar mi evento con Mendoza Sonido y DJ." href="#"><svg class="ico"><use href="#i-wa"/></svg> ¿Prefieres escribirnos? Cotiza por WhatsApp</a>
   </div>
-  <nav class="jump" id="jump" aria-label="Accesos directos"></nav>
 </section>
 
-<!-- ============ PAQUETES ============ -->
+<!-- ============ PAQUETES Y COTIZADOR ============
+     Paso 1: elegir paquete. Paso 2: adicionales y pequeños extras. Paso 3: datos y envío por WhatsApp.
+     El contenido lo dibuja render.js y la lógica está en cotizador.js. Todo se edita en el panel. -->
 <section class="section" id="paquetes">
   <div class="wrap">
     <header class="head">
-      <p class="label"><b>01</b><i></i> Paquetes</p>
+      <p class="label"><b>01</b><i></i> Cotiza en 3 pasos</p>
       <h2 id="paqTitle"></h2>
     </header>
 
-    <form class="finder" id="finder" aria-label="Encuentra tu paquete">
+    <div class="wiz" id="wiz">
+      <ol class="wiz__steps" aria-label="Pasos para cotizar">
+        <li><button type="button" data-go="1" aria-current="step"><b>1</b><span>Paquete<small id="wizPackName"></small></span></button></li>
+        <li><button type="button" data-go="2"><b>2</b><span>Extras<small id="wizExtrasN"></small></span></button></li>
+        <li><button type="button" data-go="3"><b>3</b><span>Tus datos</span></button></li>
+      </ol>
+      <p class="wiz__guide" id="wizGuide" aria-live="polite"></p>
+
+      <!-- Paso 1: paquete -->
+      <div class="wiz__panel" data-step="1">
+        <div class="wiz__intro"><h3 id="wiz1T"></h3><p id="wiz1P"></p></div>
+        <div class="packs picks" id="pick"></div>
+        <div class="kidpick" id="kidPick"></div>
+        <!-- Asistente: 2 preguntas y te dice qué paquete te conviene -->
+        <div class="helper" id="helper">
+          <div class="helper__head"><b id="helpT">¿No sabes cuál elegir?</b><span id="helpP"></span></div>
+          <div class="helper__q">
+            <p>¿Cuántos invitados?</p>
+            <div class="helper__opts" data-q="inv">
+              <button type="button" data-v="100" aria-pressed="false">Hasta 100</button>
+              <button type="button" data-v="150" aria-pressed="false">101 a 150</button>
+              <button type="button" data-v="180" aria-pressed="false">151 a 180</button>
+              <button type="button" data-v="999" aria-pressed="false">Más de 180</button>
+            </div>
+          </div>
+          <div class="helper__q">
+            <p>¿Qué día es tu evento?</p>
+            <div class="helper__opts" data-q="dia">
+              <button type="button" data-v="sab" aria-pressed="false">Sábado</button>
+              <button type="button" data-v="sem" aria-pressed="false">Domingo a viernes</button>
+              <button type="button" data-v="nose" aria-pressed="false">Aún no sé</button>
+            </div>
+          </div>
+          <div class="helper__res" id="helpRes" aria-live="polite"></div>
+        </div>
+        <p class="deal" id="deal"><svg class="ico"><use href="#i-clock"/></svg><span id="dealText"></span></p>
+        <button type="button" class="btn btn--line wiz__all" id="verTodos" aria-expanded="false" aria-controls="todos"><span id="verTodosT">Ver todos los paquetes y comparar</span> <span class="arrow">↓</span></button>
+        <div class="todos" id="todos" hidden>
+          <form class="finder" id="finder" aria-label="Encuentra tu paquete">
       <div class="finder__head">
         <p class="finder__title">Encuentra tu paquete</p>
         <p class="finder__hint">Marca lo que necesitas y te mostramos solo los paquetes que te sirven.</p>
@@ -129,16 +165,60 @@
         <button type="button" class="tbtn" id="fReset" hidden>Quitar filtros ×</button>
       </div>
     </form>
-
-    <p class="deal" id="deal"><svg class="ico"><use href="#i-clock"/></svg><span id="dealText"></span></p>
-
-    <div class="finder__empty" id="fEmpty" hidden>
+          <div class="finder__empty" id="fEmpty" hidden>
       <p><b>Ningún paquete tiene todo eso junto.</b> Quita algún filtro o escríbenos y lo armamos a tu medida.</p>
       <a class="btn btn--wa" id="fAsk" data-wa="Hola, quiero cotizar mi evento con Mendoza Sonido y DJ." href="#"><svg class="ico"><use href="#i-wa"/></svg> Armar mi paquete</a>
     </div>
+          <!-- Aquí se dibujan los grupos de paquetes y la tabla para comparar -->
+          <div id="grupos"></div>
+        </div>
+      </div>
 
-    <!-- Aquí se dibujan los grupos de paquetes y la tabla para comparar -->
-    <div id="grupos"></div>
+      <!-- Paso 2: complementa tu evento -->
+      <div class="wiz__panel" data-step="2" hidden>
+        <div class="wiz__intro"><h3 id="wiz2T"></h3><p id="wiz2P"></p></div>
+        <p class="wiz__hint" id="wizNoPack" hidden>Primero elige tu paquete: así te mostramos solo lo que combina con él. <button type="button" class="tbtn" data-go="1">Elegir paquete</button></p>
+        <div class="qopts" id="qopts"></div>
+        <div class="qsmall" id="qsmall">
+          <h4 id="wizSmallT"></h4>
+          <p id="wizSmallP"></p>
+          <div class="qchips" id="qchips"></div>
+        </div>
+        <div class="wiz__nav">
+          <button type="button" class="btn btn--ghost" data-go="1">← Paquete</button>
+          <button type="button" class="btn btn--main" data-go="3">Continuar <span class="arrow">→</span></button>
+        </div>
+      </div>
+
+      <!-- Paso 3: datos del evento -->
+      <div class="wiz__panel" data-step="3" hidden>
+        <div class="wiz__intro"><h3 id="wiz3T"></h3><p id="wiz3P"></p></div>
+        <form class="wform" id="wizForm" novalidate>
+          <label>Fecha del evento <em>*</em><input type="date" name="fecha" required></label>
+          <label>Invitados aproximados <em>*</em><input type="number" name="invitados" min="1" max="3000" inputmode="numeric" placeholder="Ej. 120" required></label>
+          <label>Tipo de evento<select name="tipo" id="wizTipo"><option value="">Elige una opción</option></select></label>
+          <label>Lugar o colonia<input type="text" name="lugar" placeholder="Ej. Jardín en Cuernavaca" autocomplete="off"></label>
+          <label>Tu nombre <em>*</em><input type="text" name="nombre" autocomplete="name" required></label>
+          <label>Teléfono<input type="tel" name="telefono" autocomplete="tel" inputmode="tel" placeholder="10 dígitos (opcional)"></label>
+        </form>
+        <p class="wiz__warn" id="wizWarn" aria-live="polite" hidden></p>
+        <div class="wsum" id="wizSum"></div>
+        <p class="wiz__note" id="wizNote"></p>
+        <div class="wiz__nav">
+          <button type="button" class="btn btn--ghost" data-go="2">← Extras</button>
+          <a class="btn btn--wa" id="wizSend" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-wa"/></svg> <span id="wizSendT">Solicitar mi cotización</span></a>
+        </div>
+        <p class="wiz__err" id="wizErr" aria-live="assertive"></p>
+        <div class="wiz__done" id="wizDone" role="status" hidden></div>
+        <div class="next" id="wizNext"></div>
+      </div>
+
+      <!-- Resumen fijo con el total -->
+      <div class="wiz__bar" id="wizBar" hidden>
+        <p><span id="wizBarItems"></span><b id="wizBarTotal"></b></p>
+        <button type="button" class="btn btn--main btn--sm" id="wizBarGo">Continuar <span class="arrow">→</span></button>
+      </div>
+    </div>
 
     <div class="incl">
       <h3>Todos los paquetes incluyen</h3>
@@ -152,39 +232,12 @@
   <div class="wrap kids__grid" id="kids"></div>
 </section>
 
-<!-- ============ ADICIONALES ============ -->
-<section class="section" id="adicionales">
-  <div class="wrap">
-    <header class="head head--split">
-      <div>
-        <p class="label"><b>03</b><i></i> Servicios adicionales</p>
-        <h2 id="adiTitle"></h2>
-      </div>
-      <p class="head__note" id="adiNote"></p>
-    </header>
-    <div class="extras" id="extras"></div>
-    <p class="after"><a class="btn btn--line" data-wa="Hola, quiero información y precios de los servicios adicionales." href="#">Preguntar por los adicionales <span class="arrow">→</span></a></p>
-  </div>
-</section>
-
-<!-- ============ CÓMO APARTAR ============ -->
-<section class="section" id="proceso">
-  <div class="wrap">
-    <header class="head">
-      <p class="label"><b>04</b><i></i> Cómo apartar</p>
-      <h2 id="aparTitle"></h2>
-    </header>
-    <ol class="steps" id="pasos"></ol>
-    <div class="pvideos" id="pvideos"></div>
-  </div>
-</section>
-
 <!-- ============ GALERÍA ============ -->
 <section class="section" id="galeria">
   <div class="wrap">
     <header class="head head--split">
       <div>
-        <p class="label"><b>05</b><i></i> Galería</p>
+        <p class="label"><b>03</b><i></i> Eventos reales</p>
         <h2 id="galTitle"></h2>
       </div>
       <div class="gtabs" role="tablist" aria-label="Galería">
@@ -193,6 +246,9 @@
         <button role="tab" aria-selected="false" data-gtab="g-tiktok">TikTok</button>
       </div>
     </header>
+
+    <!-- Reseñas de clientes -->
+    <aside class="reviews" id="resenas"></aside>
 
     <div class="gpanel" id="g-fotos" role="tabpanel">
       <div class="gallery" id="gallery"></div>
@@ -212,8 +268,18 @@
       <p class="after"><a class="btn btn--line" id="tkMore" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-tt"/></svg> Ver más en <span id="tkUser"></span> <span class="arrow">→</span></a></p>
     </div>
 
-    <!-- Reseñas de clientes -->
-    <aside class="reviews" id="resenas"></aside>
+  </div>
+</section>
+
+<!-- ============ CÓMO APARTAR ============ -->
+<section class="section" id="proceso">
+  <div class="wrap">
+    <header class="head">
+      <p class="label"><b>04</b><i></i> Cómo apartar</p>
+      <h2 id="aparTitle"></h2>
+    </header>
+    <ol class="steps" id="pasos"></ol>
+    <div class="pvideos" id="pvideos"></div>
   </div>
 </section>
 
@@ -221,7 +287,7 @@
 <section class="section section--paper" id="preguntas">
   <div class="wrap qa">
     <header class="head">
-      <p class="label"><b>06</b><i></i> Preguntas frecuentes</p>
+      <p class="label"><b>05</b><i></i> Preguntas frecuentes</p>
       <h2 id="faqTitle"></h2>
       <p class="head__sub">¿No encuentras la tuya? Escríbenos y te respondemos.</p>
       <a class="btn btn--line" data-wa="Hola, tengo una duda sobre sus paquetes." href="#"><svg class="ico"><use href="#i-wa"/></svg> Preguntar por WhatsApp</a>
@@ -256,7 +322,7 @@
 <!-- Barra inferior (celular) -->
 <nav class="dock" id="dock" aria-label="Accesos rápidos">
   <a href="#paquetes"><svg class="ico"><use href="#i-speaker"/></svg><span>Paquetes</span></a>
-  <a href="#adicionales"><svg class="ico"><use href="#i-star"/></svg><span>Adicionales</span></a>
+  <a href="#paquetes" id="dockQuote"><svg class="ico"><use href="#i-cart"/></svg><span>Cotización</span><b class="dock__n" id="dockN" hidden></b></a>
   <button type="button" data-search><svg class="ico"><use href="#i-search"/></svg><span>Buscar</span></button>
   <a class="dock__wa" data-wa="Hola, quiero cotizar mi evento con Mendoza Sonido y DJ." href="#"><svg class="ico"><use href="#i-wa"/></svg><span>Cotizar</span></a>
 </nav>
@@ -320,32 +386,6 @@
   </div>
 </dialog>
 
-<!-- Cotizador: paquete + adicionales -->
-<dialog class="quote" id="quote" aria-labelledby="qTitle">
-  <button class="lightbox__close" id="qClose" aria-label="Cerrar">×</button>
-  <form id="qForm">
-    <p class="label"><i></i> Tu cotización</p>
-    <h3 id="qTitle">Paquete <em id="qPack"></em> <span id="qPrice"></span></h3>
-
-    <div class="quote__fields">
-      <label for="qDate">Fecha del evento<input type="date" id="qDate"></label>
-      <label for="qGuests">Invitados<input type="number" id="qGuests" min="1" max="500" inputmode="numeric" placeholder="Ej. 120"></label>
-      <label for="qPlace" class="wide">Lugar o colonia<input type="text" id="qPlace" placeholder="Ej. Jardín en Cuernavaca" autocomplete="off"></label>
-    </div>
-    <p class="quote__day" id="qDay" aria-live="polite"></p>
-
-    <fieldset class="quote__extras">
-      <legend>¿Quieres agregar algo más? <small>Opcional</small></legend>
-      <div class="quote__grid" id="qGrid"></div>
-    </fieldset>
-
-    <div class="quote__send">
-      <p class="quote__sum" id="qSum">Solo el paquete, sin adicionales.</p>
-      <a class="btn btn--wa" id="qSend" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-wa"/></svg> Enviar por WhatsApp</a>
-    </div>
-  </form>
-</dialog>
-
 <!-- Visor de fotos y videos -->
 <dialog class="lightbox" id="lightbox" aria-label="Foto o video ampliado">
   <button class="lightbox__close" id="lbClose" aria-label="Cerrar">×</button>
@@ -390,5 +430,6 @@
 <script src="contenido.js"></script>
 <script src="firebase-config.js"></script>
 <script src="cargar.js"></script>
+<!-- cargar.js carga después render.js, script.js, cotizador.js y efectos.js -->
 </body>
 </html>

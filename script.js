@@ -74,7 +74,7 @@ if ("IntersectionObserver" in window && !reduceMotion) {
     { threshold: 0.06, rootMargin: "0px 0px -6% 0px" }
   );
   const groups = [".head", ".jump a", ".incl", ".finder", ".pgroup__head", ".pack", ".compare", ".pvideos", ".reviews", ".kids__photo", ".kids__body",
-    ".extra", ".g", ".v", ".steps li", ".faq details", ".cta__box"];
+    ".extra", ".g", ".v", ".steps li", ".faq details", ".cta__box", ".wiz__steps", ".kidpick"];
   $$(groups.join(",")).forEach((el) => {
     if (el.getBoundingClientRect().top < innerHeight * 0.95) return; // ya visible: no se oculta
     const sibs = [...el.parentElement.children];
@@ -91,6 +91,7 @@ if ("IntersectionObserver" in window && !reduceMotion) {
 /* Lleva la vista a un elemento y lo resalta un momento */
 const flash = (el) => {
   if (!el) return;
+  if (window.Cotizador) window.Cotizador.reveal(el); // abre el paso o la lista donde está
   el.classList.add("is-in");
   el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
   el.classList.remove("is-found");
@@ -105,7 +106,8 @@ const flash = (el) => {
      <b data-p="fijo"> un solo precio cualquier día.
    - Personas: el número de la línea "pack__cap".
    - data-tags del paquete: lo que incluye, para el filtro "¿Qué quieres que incluya?". */
-const PACKS = $$(".pack").map((card) => ({
+// (las tarjetas del paso 1 del cotizador, .pack--pick, son copias: no cuentan aquí)
+const PACKS = $$(".pack:not(.pack--pick)").map((card) => ({
   card,
   name: $("h4", card).textContent.trim(),
   cap: digits($(".pack__cap", card)),
@@ -322,7 +324,7 @@ if (pview && pview.showModal) {
     pview.scrollTop = 0; strip.scrollLeft = 0;
     pvSync();
   };
-  $$(".pack").forEach((card) => card.addEventListener("click", (e) => {
+  $$(".pack:not(.pack--pick)").forEach((card) => card.addEventListener("click", (e) => {
     const viewBtn = e.target.closest("[data-view]");
     if (!viewBtn && e.target.closest("a, button")) return; // los demás botones hacen lo suyo
     openPack(card);
@@ -429,6 +431,9 @@ if (search && search.showModal) {
     const prices = $$(".price b", x).map((b) => text(b));
     add("Adicional", text($("h3", x)), prices.length ? "Desde " + prices[prices.length - 1] : "Precio al cotizar", x, "adicional extra agregar");
   });
+  // Adicionales y extras del cotizador (paso 2)
+  $$(".qopt").forEach((x) => add("Adicional", x.dataset.name, text($(".qopt__price", x)), x, "adicional extra agregar"));
+  $$(".qchip").forEach((x) => add("Extra", x.dataset.name, text($("small", x)), x, "extra detalle agregar"));
   $$(".chips button").forEach((b) => {
     const price = text($(".chips__price", b.parentElement));
     add("Show", b.dataset.cap, price || "Toca para ver su video", b, "show botarga personaje video" + (price ? " precio costo cuanto cuesta" : ""));

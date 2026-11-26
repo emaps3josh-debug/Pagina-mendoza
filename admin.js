@@ -7,6 +7,17 @@
   const DRAFT_KEY = "mendoza-borrador"; // la misma clave que lee render.js con ?borrador
   const FB = window.FIREBASE_CONFIG || {};
   const useFirebase = !!(FB.apiKey && FB.databaseURL);
+  // Completa lo que falte (ajustes nuevos) con lo de contenido.js, sin tocar lo que ya editaste
+  const BASE = JSON.parse(JSON.stringify(window.SITIO || {}));
+  const completar = (data, base) => {
+    if (!data || typeof data !== "object" || !base || typeof base !== "object") return data;
+    Object.keys(base).forEach((k) => {
+      const b = base[k];
+      if (data[k] === undefined) data[k] = JSON.parse(JSON.stringify(b));
+      else if (b && typeof b === "object" && !Array.isArray(b) && data[k] && typeof data[k] === "object" && !Array.isArray(data[k])) completar(data[k], b);
+    });
+    return data;
+  };
   let PUBLISHED = JSON.stringify(window.SITIO || {}); // lo que está publicado (para saber si hay cambios)
   let neverPublished = false;                         // Firebase todavía no tiene contenido
   let D = JSON.parse(PUBLISHED);
@@ -15,7 +26,7 @@
     D = JSON.parse(PUBLISHED); hadDraft = false;
     try {
       const d = localStorage.getItem(DRAFT_KEY);
-      if (d && d !== PUBLISHED) { D = JSON.parse(d); hadDraft = true; }
+      if (d && d !== PUBLISHED) { D = completar(JSON.parse(d), JSON.parse(PUBLISHED)); hadDraft = JSON.stringify(D) !== PUBLISHED; }
     } catch (e) { /* sin borrador */ }
   };
   loadDraft();
@@ -97,10 +108,11 @@
     // Varias opciones a la vez (se guardan como lista)
     tags(o, f) {
       const cur = new Set(Array.isArray(o[f.key]) ? o[f.key] : []);
-      const box = h("div", { class: "tags" }, f.options.map(([v, t]) => {
+      const OPTS = typeof f.options === "function" ? f.options() : f.options;
+      const box = h("div", { class: "tags" }, OPTS.map(([v, t]) => {
         const i = h("input", { type: "checkbox" });
         i.checked = cur.has(v);
-        i.addEventListener("change", () => { i.checked ? cur.add(v) : cur.delete(v); o[f.key] = f.options.map(([x]) => x).filter((x) => cur.has(x)); changed(); });
+        i.addEventListener("change", () => { i.checked ? cur.add(v) : cur.delete(v); o[f.key] = OPTS.map(([x]) => x).filter((x) => cur.has(x)); changed(); });
         return h("label", null, i, h("span", null, t));
       }));
       return h("div", { class: "fld" }, h("span", { class: "fld__l" }, f.label), box, f.hint ? h("small", { class: "fld__h" }, f.hint) : null);
@@ -288,6 +300,8 @@
       help: "Título de la sección, aviso de descuento, nombres de los dos grupos, lo que incluyen todos los paquetes y los renglones de la tabla para comparar.",
       fields: [
         ...titleFields("Elige el paquete", "para tu evento"),
+        { key: "destacados", label: "Paquetes al frente (máximo 3)", type: "tags", options: () => D.paquetes.lista.map((p) => [p.id, packName(p)]), hint: "Son los que se ven primero en el paso 1 del cotizador. Si marcas más de 3, se usan los primeros 3 de la lista." },
+        { key: "recomendado", label: "Paquete recomendado", type: "select", options: () => [["", "Ninguno"]].concat(D.paquetes.lista.map((p) => [p.id, packName(p)])), hint: "Lleva la etiqueta \"Recomendado\" (debe ser uno de los de al frente)." },
         { key: "avisoFuerte", label: "Aviso: parte en negritas", ph: "$500 de descuento de domingo a viernes", hint: "Deja los dos campos del aviso vacíos para ocultarlo." },
         { key: "avisoTexto", label: "Aviso: resto del texto", type: "area", rows: 2 },
         { key: "grupos", type: "list", label: "Grupos de paquetes", fixed: true, title: (g) => g.titulo,
@@ -329,6 +343,9 @@
             { key: "icono", label: "Icono (si no hay foto)", type: "select", options: ICONOS, w: "third" },
             { key: "promo", label: "Precio con descuento (opcional)", type: "num", w: "half" },
             { key: "promoNota", label: "Texto del descuento", w: "half", ph: "Descuento para clientes" },
+            { key: "porPersona", label: "El precio es por persona (el cotizador lo multiplica por los invitados)", type: "check" },
+            { key: "minimo", label: "Mínimo de personas", type: "num", w: "half", hint: "Solo si el precio es por persona. 0 = sin mínimo." },
+            { key: "promoDesde", label: "Precio con descuento desde (personas)", type: "num", w: "half", hint: "Solo si es por persona: desde cuántos invitados aplica el precio con descuento. 0 = no se aplica solo." },
             { key: "foto", label: "Foto", type: "img" },
             { key: "fotoAlt", label: "Descripción de la foto" },
             { key: "video", label: "Video (opcional)", type: "video" },
@@ -395,6 +412,7 @@
       fields: [
         ...titleFields("Música, ambiente y diversión", "en tus eventos"),
         { key: "texto", label: "Texto debajo del título", type: "area", rows: 3 },
+        { key: "boton", label: "Texto del botón principal", ph: "Encuentra tu paquete" },
         { key: "foto", label: "Foto de fondo", type: "img" },
       ],
     },
@@ -452,9 +470,43 @@
       ],
     },
     {
-      id: "cotizador", titulo: "Cotizador", count: () => D.cotizador.length, get: () => D,
-      help: "Las casillas de \"¿Quieres agregar algo más?\" que ve el cliente al cotizar un paquete.",
+      id: "extras-chicos", titulo: "Pequeños extras", count: () => (D.extrasChicos || []).length, get: () => D,
+      help: "Complementos rápidos que aparecen en el paso 2 del cotizador, debajo de los adicionales, en tamaño compacto. Sin precio salen como \"Precio al cotizar\" y no se suman al total.",
       fields: [{
+        key: "extrasChicos", type: "list", add: "Agregar extra", title: (x) => [x.nombre || "Extra nuevo", +x.precio ? money(x.precio) + (x.nota ? " · " + x.nota : "") : "Precio al cotizar"],
+        nuevo: () => ({ nombre: "", precio: 0, nota: "", grupo: "", noEn: "", soloEn: "" }),
+        fields: [
+          { key: "nombre", label: "Nombre", w: "half" },
+          { key: "precio", label: "Precio", type: "num", w: "half", hint: "0 = \"Precio al cotizar\"" },
+          { key: "nota", label: "Nota pequeña (opcional)", ph: "6 piezas de cada accesorio" },
+          { key: "grupo", label: "Grupo (opcional)", w: "half", ph: "batucada", hint: "Los extras con el mismo grupo son opciones de lo mismo: el cliente solo puede elegir uno." },
+          { key: "noEn", label: "No ofrecerlo en estos paquetes", w: "half", ph: "Premium VIP|Élite VIP", hint: "Nombres exactos separados por |" },
+          { key: "soloEn", label: "Ofrecerlo solo en este paquete (opcional)" },
+        ],
+      }],
+    },
+    {
+      id: "cotizador", titulo: "Cotizador", count: () => D.cotizador.length, get: () => D,
+      help: "Textos del cotizador en 3 pasos y las reglas de qué adicionales se ofrecen con cada paquete. Los precios de los adicionales salen de la sección Adicionales.",
+      fields: [{
+        key: "cotizacion", type: "group", label: "Textos del cotizador",
+        fields: [
+          { key: "guia1", label: "Guía del paso 1", type: "area", rows: 2, hint: "Frase que orienta al cliente arriba de cada paso." },
+          { key: "guia2", label: "Guía del paso 2", type: "area", rows: 2 },
+          { key: "guia3", label: "Guía del paso 3", type: "area", rows: 2 },
+          { key: "asistente", label: "Asistente: título", ph: "¿No sabes cuál elegir?" },
+          { key: "asistenteTexto", label: "Asistente: texto" },
+          { key: "despues", label: "Título de \"qué pasa después\"", hint: "Los pasos salen de la sección Cómo apartar (sin el primero)." },
+          { key: "paso1", label: "Paso 1: título" }, { key: "paso1Texto", label: "Paso 1: texto", type: "area", rows: 2 },
+          { key: "paso2", label: "Paso 2: título" }, { key: "paso2Texto", label: "Paso 2: texto", type: "area", rows: 2 },
+          { key: "extrasTitulo", label: "Pequeños extras: título" }, { key: "extrasTexto", label: "Pequeños extras: texto", type: "area", rows: 2 },
+          { key: "paso3", label: "Paso 3: título" }, { key: "paso3Texto", label: "Paso 3: texto", type: "area", rows: 2 },
+          { key: "nota", label: "Aviso debajo del total", type: "area", rows: 2 },
+          { key: "boton", label: "Texto del botón para enviar" },
+          { key: "tipos", label: "Tipos de evento", type: "lines", rows: 6, hint: "Un tipo por renglón." },
+        ],
+      }, {
+        label: "Reglas de cada opción", hint: "Cada adicional o show se busca aquí por su nombre: \"No ofrecerlo en\" lo oculta en esos paquetes (porque ya lo incluyen). Si una opción no es un adicional (ej. pantalla de 58\"), aparece como opción extra con el precio de su nota.",
         key: "cotizador", type: "list", add: "Agregar opción", title: (x) => [x.nombre || "Opción nueva", x.nota], nuevo: () => ({ nombre: "", nota: "", mensaje: "", noEn: "", soloEn: "" }),
         fields: [
           { key: "nombre", label: "Nombre", w: "half" },
@@ -632,7 +684,7 @@
         try {
           const snap = await R.get(R.ref(db, "sitio/json"));
           const v = snap.exists() ? snap.val() : "";
-          if (typeof v === "string" && v && JSON.parse(v).paquetes) { PUBLISHED = v; neverPublished = false; }
+          if (typeof v === "string" && v && JSON.parse(v).paquetes) { PUBLISHED = JSON.stringify(completar(JSON.parse(v), BASE)); neverPublished = false; }
           else neverPublished = true; // aún no se publica nada: se parte de contenido.js
         } catch (e) { neverPublished = false; alert("No se pudo leer lo publicado en Firebase. Se muestra el contenido de respaldo; revisa tu conexión antes de publicar."); }
         loadDraft();

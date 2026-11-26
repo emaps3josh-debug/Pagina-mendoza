@@ -2,12 +2,28 @@
    1. Si Firebase está configurado (firebase-config.js), trae lo último que publicaste en el panel.
    2. Si Firebase no responde, usa la última copia guardada en este navegador.
    3. Si no hay nada de lo anterior, usa contenido.js (el contenido de respaldo).
-   Después carga render.js (dibuja la página), script.js (menú, filtros, buscador)
-   y efectos.js (música de fondo y animaciones). */
+   Lo que falte en lo publicado (por ejemplo, ajustes nuevos que todavía no existían cuando
+   publicaste) se completa con contenido.js, sin tocar lo que ya editaste.
+   Después carga render.js (dibuja la página), script.js (menú, filtros, buscador),
+   cotizador.js (cotizador en 3 pasos) y efectos.js (música de fondo y animaciones). */
+
+// Completa lo que falte en "data" con lo de "base". Las listas no se mezclan: se respeta la tuya.
+window.completarSitio = function completar(data, base) {
+  if (!data || typeof data !== "object" || !base || typeof base !== "object") return data;
+  Object.keys(base).forEach((k) => {
+    const b = base[k];
+    if (data[k] === undefined) data[k] = JSON.parse(JSON.stringify(b));
+    else if (b && typeof b === "object" && !Array.isArray(b) && data[k] && typeof data[k] === "object" && !Array.isArray(data[k])) completar(data[k], b);
+  });
+  return data;
+};
+window.SITIO_BASE = JSON.parse(JSON.stringify(window.SITIO || {}));
+
 (async () => {
   const cfg = window.FIREBASE_CONFIG || {};
   const CACHE_KEY = "mendoza-publicado";
   const valid = (d) => d && typeof d === "object" && d.paquetes && d.negocio;
+  const use = (d) => { window.SITIO = window.completarSitio(d, window.SITIO_BASE); };
 
   // La vista previa del panel (?borrador) usa el borrador de este navegador: no hace falta pedir nada
   let hasDraft = false;
@@ -24,19 +40,19 @@
       if (typeof json === "string" && json) {
         const data = JSON.parse(json);
         if (valid(data)) {
-          window.SITIO = data;
+          use(data);
           try { localStorage.setItem(CACHE_KEY, json); } catch (e) { /* sin espacio: no pasa nada */ }
         }
       }
     } catch (err) {
       try {
         const data = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
-        if (valid(data)) window.SITIO = data;
+        if (valid(data)) use(data);
       } catch (e) { /* se queda contenido.js */ }
     }
   }
 
-  for (const src of ["render.js", "script.js", "efectos.js"]) {
+  for (const src of ["render.js", "script.js", "cotizador.js", "efectos.js"]) {
     await new Promise((done) => {
       const s = document.createElement("script");
       s.src = src;
