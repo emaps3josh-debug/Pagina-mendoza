@@ -190,7 +190,7 @@
   const AUTO = { "p-basico": "gris", "p-plata": "plata", "p-oro": "oro", "p-premium": "morado", "p-elite": "azul", "p-plus": "cian", "p-exp": "rosa", "p-led": "verde", "p-pvip": "fucsia", "p-vip": "rojo" };
   const temaKeys = Object.keys(TEMAS);
   const packData = ((S.paquetes || {}).lista) || [];
-  $$(".pack").forEach((card, i) => {
+  $$(".pack, .mpick").forEach((card, i) => {
     const pid = card.id || card.dataset.pid; // las del paso 1 del cotizador usan data-pid
     const p = packData.find((x) => x.id === pid) || {};
     const key = TEMAS[p.color] ? p.color : AUTO[pid] || temaKeys[i % temaKeys.length];

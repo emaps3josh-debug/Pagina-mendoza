@@ -105,6 +105,8 @@
       <div class="wiz__panel" data-step="1">
         <div class="wiz__intro"><h3 id="wiz1T"></h3><p id="wiz1P"></p></div>
         <div class="packs picks" id="pick"></div>
+        <!-- Los demás paquetes, también para elegir directo -->
+        <div class="morepicks" id="morePicks"></div>
         <div class="kidpick" id="kidPick"></div>
         <!-- Asistente: 2 preguntas y te dice qué paquete te conviene -->
         <div class="helper" id="helper">
@@ -129,7 +131,7 @@
           <div class="helper__res" id="helpRes" aria-live="polite"></div>
         </div>
         <p class="deal" id="deal"><svg class="ico"><use href="#i-clock"/></svg><span id="dealText"></span></p>
-        <button type="button" class="btn btn--line wiz__all" id="verTodos" aria-expanded="false" aria-controls="todos"><span id="verTodosT">Ver todos los paquetes y comparar</span> <span class="arrow">↓</span></button>
+        <button type="button" class="btn btn--line wiz__all" id="verTodos" aria-expanded="false" aria-controls="todos"><span id="verTodosT">Filtrar y comparar paquetes</span> <span class="arrow">↓</span></button>
         <div class="todos" id="todos" hidden>
           <form class="finder" id="finder" aria-label="Encuentra tu paquete">
       <div class="finder__head">

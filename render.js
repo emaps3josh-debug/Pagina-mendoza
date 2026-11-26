@@ -270,7 +270,13 @@
     const feat = featIds.length ? featIds.map((id) => packs.find((p) => p.id === id)) : packs.slice(0, 3);
     html("#pick", feat.map((p) => packCard(p, true, p.id === Q.recomendado)).join(""));
     text("#wiz1T", CZ.paso1); text("#wiz1P", CZ.paso1Texto);
-    text("#verTodosT", "Ver los " + packs.length + " paquetes y comparar");
+    // Los demás paquetes: lista compacta, siempre visible, para que el cliente pueda elegir cualquiera
+    const rest = packs.filter((p) => !feat.includes(p));
+    const priceTxt = (p) => (single(p) ? money(single(p)) : +p.sabado ? money(p.sabado) + " sábado · " + money(p.semana) + " dom a vie" : money(p.semana) + " · solo dom a vie");
+    html("#morePicks", rest.length ? "<h4>Más paquetes <span>Todos incluyen DJ animador y 7 horas</span></h4>" + rest.map((p) =>
+      '<div class="mpick" data-pid="' + esc(p.id) + '"><div class="mpick__t"><b>' + esc(p.nombre) + (p.resaltado ? " <em>" + esc(p.resaltado) + "</em>" : "") + "</b><span>" + esc(p.capTexto || "Hasta") + " " + (+p.personas || 0) + " personas · " + priceTxt(p) + "</span></div>" +
+      '<div class="mpick__a"><button type="button" class="tbtn" data-pview="' + esc(p.id) + '">Detalles</button><button type="button" class="btn btn--pack btn--sm" data-pick="' + esc(p.id) + '">Elegir</button></div></div>').join("") : "");
+    text("#verTodosT", "Filtrar y comparar los " + packs.length + " paquetes");
     const kp = el("#kidPick");
     if (kp) {
       kp.hidden = !kidsOn;

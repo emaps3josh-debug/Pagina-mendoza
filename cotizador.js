@@ -101,7 +101,7 @@
   const render = () => {
     const t = totals(), p = t.p;
     // Selección visible
-    $$(".pack--pick, .kidpick", wiz).forEach((c) => {
+    $$(".pack--pick, .mpick, .kidpick", wiz).forEach((c) => {
       const id = c.dataset.pid || "infantil", on = id === st.pack;
       c.classList.toggle("is-sel", on);
       const b = $("[data-pick]", c);
@@ -379,8 +379,9 @@
     if (st.step === 1) {
       if (st.pack) return [visibleBtn("#wizBarGo, [data-step=\"1\"] .is-sel [data-pick]") || $("#wizBarGo"), "¡Muy bien! 🎉 Ahora toca <b>Continuar</b>"];
       const rec = (S.paquetes || {}).recomendado;
-      const el = visibleBtn(".pack--pick [data-pick]") || $(".pack--pick[data-pid=\"" + rec + "\"] [data-pick]") || $(".pack--pick [data-pick]");
-      return [el, "<b>Paso 1:</b> toca <b>Elegir</b> en el paquete que te guste 🎵"];
+      // Señala el botón "Elegir" que el cliente tenga a la vista (de cualquier paquete); si no ve ninguno, le indica deslizar
+      const el = visibleBtn("[data-step=\"1\"] [data-pick]") || $(".pack--pick[data-pid=\"" + rec + "\"] [data-pick]") || $(".pack--pick [data-pick]");
+      return [el, "<b>Paso 1:</b> toca <b>Elegir</b> en el paquete que tú quieras 🎵 <small>Abajo hay más paquetes 👇</small>"];
     }
     if (st.step === 2) {
       const el = visibleBtn("[data-step=\"2\"] .wiz__nav .btn--main") || visibleBtn("#wizBarGo") || $("[data-step=\"2\"] .wiz__nav .btn--main");
