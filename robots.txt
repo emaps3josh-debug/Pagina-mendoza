@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: https://sonido-mendoza.vercel.app/sitemap.xml

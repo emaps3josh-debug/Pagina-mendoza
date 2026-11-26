@@ -112,7 +112,7 @@
           ? '<button type="button" class="btn btn--ghost" data-pview="' + esc(p.id) + '">Ver detalles</button>' +
             '<button type="button" class="btn btn--pack" data-pick="' + esc(p.id) + '">Elegir <span class="arrow">→</span></button>'
           : '<button type="button" class="btn btn--ghost" data-view>Ver detalles</button>' +
-            '<a class="btn btn--pack" data-pack="' + esc(name) + '" href="#">Elegir <span class="arrow">→</span></a>') +
+            '<a class="btn btn--pack" data-pack="' + esc(name) + '" href="/cotizar?paquete=' + encodeURIComponent(p.id) + '">Elegir <span class="arrow">→</span></a>') +
       "</div></article>";
   };
 
@@ -154,12 +154,12 @@
   document.querySelectorAll("#infantil, a[href='#infantil']").forEach((e) => (e.hidden = !kidsOn));
   if (kidsOn) html("#kids",
     '<figure class="kids__photo">' + (K.foto ? '<img loading="lazy" decoding="async" src="' + esc(K.foto) + '" alt="' + esc(K.fotoAlt) + '">' : "") + "</figure>" +
-    '<div class="kids__body"><p class="label"><b>02</b><i></i> Fiestas infantiles</p>' +
+    '<div class="kids__body"><p class="label"><i></i> Fiestas infantiles</p>' +
     "<h2>" + esc(K.titulo) + (K.resaltado ? " <em>" + esc(K.resaltado) + "</em>" : "") + "</h2>" +
     '<p class="kids__price"><b><sup>$</sup>' + num(K.precio) + "</b><span>" + esc(K.precioNota) + "</span></p>" +
     '<ul class="kids__list">' + list(K.puntos).map((x) => "<li>" + ico(x.icono) + "<div><b>" + esc(x.titulo) + "</b><span>" + esc(x.texto) + "</span></div></li>").join("") + "</ul>" +
     (K.opcion ? '<p class="kids__opt">' + rich(K.opcion) + "</p>" : "") +
-    '<a class="btn btn--wa" data-wa="Hola, me interesa el Paquete ' + esc(kidsName.toUpperCase()) + " (" + money(K.precio) + '). Mi evento es el día: " data-pack="' + esc(kidsName) + '" data-price="' + money(K.precio) + '" href="#">' + ico("i-wa") + " " + esc(K.boton || "Reservar") + "</a></div>");
+    '<a class="btn btn--main" data-pack="' + esc(kidsName) + '" href="/cotizar?paquete=infantil">' + esc(K.boton || "Reservar") + ' <span class="arrow">→</span></a></div>');
 
   /* ---------- Accesos directos de la portada ---------- */
   html("#jump",
@@ -243,7 +243,7 @@
   /* ---------- Preguntas ---------- */
   const F = S.preguntas || {};
   heading("#faqTitle", F.titulo, F.resaltado);
-  html("#faq", list(F.lista).filter((x) => x.p).map((x) => "<details><summary>" + esc(x.p) + ' <span class="plus" aria-hidden="true"></span></summary><p>' + esc(x.r) + "</p></details>").join(""));
+  html("#faq", list(F.lista).filter((x) => x.p).map((x, i) => '<details id="faq-' + (i + 1) + '"><summary>' + esc(x.p) + ' <span class="plus" aria-hidden="true"></span></summary><p>' + esc(x.r) + "</p></details>").join(""));
 
   /* ---------- Contacto y pie ---------- */
   const C = S.contacto || {};
@@ -258,6 +258,17 @@
   /* ---------- Cotizador: lista de adicionales ---------- */
   html("#qGrid", list(S.cotizador).filter((x) => x.nombre).map((x) =>
     '<label class="qx"' + (x.noEn ? ' data-not="' + esc(x.noEn) + '"' : "") + (x.soloEn ? ' data-only="' + esc(x.soloEn) + '"' : "") + '><input type="checkbox" value="' + esc(x.mensaje || x.nombre) + '"><span><b>' + esc(x.nombre) + "</b>" + (x.nota ? "<small>" + esc(x.nota) + "</small>" : "") + "</span></label>").join(""));
+
+  /* ---------- Inicio: paquetes destacados (con su botón Elegir, que lleva a Cotizar) ---------- */
+  const featIdsAll = list(Q.destacados).filter((id) => packs.some((p) => p.id === id)).slice(0, 3);
+  const featAll = featIdsAll.length ? featIdsAll.map((id) => packs.find((p) => p.id === id)) : packs.slice(0, 3);
+  html("#destacados", featAll.map((p) => packCard(p)).join(""));
+  text("#destacadosN", packs.length);
+
+  /* ---------- Servicios adicionales: pequeños extras (lista simple) ---------- */
+  const chicos = list(S.extrasChicos).filter((x) => x.nombre);
+  html("#chicos", chicos.length ? "<h3>" + esc(CZsmall()) + "</h3><ul>" + chicos.map((x) => "<li><b>" + esc(x.nombre) + "</b><span>" + (+x.precio ? money(x.precio) + (x.nota ? " · " + esc(x.nota) : "") : "Precio al cotizar") + "</span></li>").join("") + "</ul>" : "");
+  function CZsmall() { return (S.cotizacion || {}).extrasTitulo || "Los pequeños detalles también cuentan"; }
 
   /* ---------- Cotizador en 3 pasos (aquí se dibuja; la lógica está en cotizador.js) ----------
      Usa los mismos datos de la página: paquetes, adicionales, shows y "pequeños extras".
@@ -352,6 +363,27 @@
   }
   // Para cotizador.js
   window.MZ = { esc, money, num, ico, rich };
+
+  /* ---------- Datos para Google (datos estructurados) ----------
+     Se generan con lo publicado en el panel, así los precios y las preguntas siempre coinciden con la página. */
+  const ld = (obj) => { const s = document.createElement("script"); s.type = "application/ld+json"; s.textContent = JSON.stringify(obj); document.head.appendChild(s); };
+  const SITE = (document.querySelector("link[rel=canonical]") || {}).href || location.href;
+  const ORIGIN = SITE.replace(/^(https?:\/\/[^/]+).*$/, "$1");
+  const biz = { "@type": "EntertainmentBusiness", "@id": ORIGIN + "/#negocio", name: "Mendoza Sonido y DJ" };
+  const offerOf = (name, price, desc, url) => ({ "@type": "Offer", priceCurrency: "MXN", price: String(price), url, itemOffered: { "@type": "Service", name, description: desc, provider: biz, areaServed: N.zona || "Cuernavaca" } });
+  if (el("#grupos")) { // Paquetes: catálogo con precios
+    const offers = packs.map((p) => offerOf("Paquete " + packName(p), lowest(p), list(p.puntos).join(", ") + ". " + (p.capTexto || "Hasta") + " " + p.personas + " personas, 7 horas de servicio.", ORIGIN + "/paquetes#" + p.id));
+    ld({ "@context": "https://schema.org", "@type": "OfferCatalog", name: "Paquetes de sonido y DJ", itemListElement: offers });
+  }
+  if (el("#kids") && K.mostrar !== false) ld({ "@context": "https://schema.org", "@type": "Service", name: "Paquete de fiesta infantil", serviceType: "Sonido para fiestas infantiles", provider: biz, areaServed: N.zona || "Cuernavaca",
+    description: list(K.puntos).map((x) => x.titulo).join(", "), offers: { "@type": "Offer", priceCurrency: "MXN", price: String(+K.precio || 0) } });
+  if (el("#extras")) { // Adicionales con precio
+    const offers = list(A.lista).filter((x) => +x.precio).map((x) => offerOf(x.nombre, +x.promo && x.porPersona ? x.promo : x.precio, x.texto, ORIGIN + "/servicios-adicionales#" + x.id))
+      .concat(list(W.personajes).filter((c) => +c.precio).map((c) => offerOf(c.nombre, c.precio, "Show " + (c.duracion || ""), ORIGIN + "/servicios-adicionales#x-shows")));
+    if (offers.length) ld({ "@context": "https://schema.org", "@type": "OfferCatalog", name: "Servicios adicionales para fiestas", itemListElement: offers });
+  }
+  const faqs = list(F.lista).filter((x) => x.p && x.r);
+  if (el("#faq") && faqs.length) ld({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((x) => ({ "@type": "Question", name: x.p, acceptedAnswer: { "@type": "Answer", text: x.r } })) });
 
   /* ---------- Aviso de vista previa ---------- */
   if (isDraft) {

@@ -40,6 +40,13 @@
   ["invitados", "tipo", "telefono"].forEach((k) => delete st.f[k]); // campos que ya no se piden
   const CZ = S.cotizacion || {};
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* sin espacio */ } };
+  // Llegó desde otra página con un paquete elegido (cotizar?paquete=p-oro): se selecciona y pasa al paso 2
+  const fromLink = new URLSearchParams(location.search).get("paquete");
+  if (fromLink && P[fromLink]) {
+    st.pack = fromLink;
+    st.step = 2;
+    try { history.replaceState(null, "", location.pathname + location.hash); } catch (e) { /* sin historial */ }
+  }
 
   /* ---------- Precios ---------- */
   const dayOf = (d) => (/^\d{4}-\d{2}-\d{2}$/.test(d || "") ? new Date(d + "T12:00:00").getDay() : -1);
@@ -326,6 +333,7 @@
   // Para el buscador y otras partes de la página
   window.Cotizador = {
     go, select, verTodos,
+    state: () => st,
     reveal(el) {
       if (!el || !el.closest) return;
       const box = el.closest("#todos");
@@ -337,139 +345,6 @@
 
   render();
 
-  /* ---------- Tutorial con manita ----------
-     Una mano animada señala dónde tocar en cada momento, con un globo que dice qué hacer:
-     portada → "Elegir" → "Continuar" → fecha y zona → "Solicitar".
-     Sale cada vez que se abre o recarga la página; la × la oculta solo en esa visita
-     (vuelve con "Ver cómo cotizar" o al recargar).
-     Se apaga en el panel: Cotizador > "Mostrar la manita de ayuda". */
-  if (CZ.tutorial === false) return;
-  const TUTO_KEY = "mendoza-tuto";
-  let tutoOn = true;
-  // La manita sale SIEMPRE al abrir o recargar la página (la × solo la oculta en esa visita).
-  // Se borra lo que guardaban versiones anteriores, que podía dejarla apagada.
-  try { localStorage.removeItem(TUTO_KEY); sessionStorage.removeItem(TUTO_KEY); } catch (e) { /* sin almacenamiento */ }
-  const tutoBtn = $("#tutoBtn");
-
-  const hand = document.createElement("div");
-  hand.className = "tuto";
-  hand.setAttribute("aria-hidden", "true");
-  hand.innerHTML = '<span class="tuto__ring"></span><svg class="tuto__hand" viewBox="0 -2 54 66"><path d="M17 5a5 5 0 0 1 10 0v19.5l1.6-.3a5 5 0 0 1 6 3.3l.4-.1a5 5 0 0 1 6.2 3.5l.5-.1a5 5 0 0 1 6 4.9V46c0 7.7-6.3 14-14 14h-6.4c-4 0-7.8-1.8-10.3-5L3.6 44.6a5 5 0 0 1 7.3-6.8L17 43.4V5Z"/></svg>';
-  const bubble = document.createElement("div");
-  bubble.className = "tuto__bubble";
-  bubble.setAttribute("role", "status");
-  bubble.innerHTML = '<p class="tuto__txt"></p><button type="button" class="tuto__x" aria-label="Ocultar la guía">×</button>';
-  document.body.append(hand, bubble);
-  const tTxt = $(".tuto__txt", bubble);
-
-  const inView = (el) => {
-    if (!el || el.hidden || !el.offsetParent) return false;
-    const r = el.getBoundingClientRect();
-    const bottom = innerHeight - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--dock-h")) || 0);
-    return r.width > 0 && r.top >= 64 && r.bottom <= bottom - 8;
-  };
-  const visibleBtn = (sel) => $$(sel).find(inView);
-  const shown = (el) => !!(el && !el.hidden && el.offsetParent); // existe y no está escondido (aunque esté fuera de la pantalla)
-  const firstEmpty = () => ["fecha", "lugar"].find((k) => !String(st.f[k] || "").trim());
-  const FIELD_TXT = { fecha: "Escribe la <b>fecha</b> de tu fiesta 📅", lugar: "Escribe la <b>zona o colonia</b> de tu fiesta 📍" };
-
-  // Qué hay que tocar ahora: [elemento, texto]
-  const target = () => {
-    if (document.querySelector("dialog[open]")) return null;
-    const hb = $("#heroBtn");
-    if (!st.pack && inView(hb) && wiz.getBoundingClientRect().top > innerHeight * 0.6) return [hb, "¡Hola! 👋 Toca aquí para <b>empezar a cotizar</b>"];
-    if (st.step === 1) {
-      if (st.pack) return [visibleBtn("#wizBarGo, [data-step=\"1\"] .is-sel [data-pick]") || $("#wizBarGo"), "¡Muy bien! 🎉 Ahora toca <b>Continuar</b>"];
-      const rec = (S.paquetes || {}).recomendado;
-      // Señala el botón "Elegir" que el cliente tenga a la vista (de cualquier paquete); si no ve ninguno, le indica deslizar
-      const el = visibleBtn("[data-step=\"1\"] [data-pick]") || $(".pack--pick[data-pid=\"" + rec + "\"] [data-pick]") || $(".pack--pick [data-pick]");
-      return [el, "<b>Paso 1:</b> toca <b>Elegir</b> en el paquete que tú quieras 🎵 <small>Abajo hay más paquetes 👇</small>"];
-    }
-    if (st.step === 2) {
-      const el = visibleBtn("[data-step=\"2\"] .wiz__nav .btn--main") || visibleBtn("#wizBarGo") || $("[data-step=\"2\"] .wiz__nav .btn--main");
-      return [el, "<b>Paso 2:</b> si quieres algo extra toca <b>Agregar</b>. Cuando termines, toca <b>Continuar</b> 👉"];
-    }
-    if (st.step === 3) {
-      const k = firstEmpty();
-      if (k) return [form && form.elements[k], "<b>Paso 3:</b> " + FIELD_TXT[k]];
-      return [$("#wizSend"), "<b>¡Último paso!</b> Toca aquí para <b>enviar tu cotización</b> por WhatsApp 📲"];
-    }
-    return null;
-  };
-
-  let lastEl = null, lastTxt = "", swipeTo = null;
-  const hide = () => { hand.classList.remove("is-on"); bubble.classList.remove("is-on"); if (lastEl) lastEl.classList.remove("tuto-on"); lastEl = null; swipeTo = null; };
-  const setText = (s) => { if (s !== lastTxt) { tTxt.innerHTML = s; lastTxt = s; } };
-  const place = () => {
-    const t = tutoOn ? target() : null;
-    const el = t && t[0];
-    if (!shown(el)) return hide();
-    // Lo que hay que tocar no se ve: la mano enseña a deslizar hacia donde está
-    if (!inView(el)) {
-      const wr = wiz.getBoundingClientRect();
-      if (wr.bottom < 80) return hide(); // ya pasó el cotizador (está viendo fotos o preguntas): no estorbar
-      if (lastEl) { lastEl.classList.remove("tuto-on"); lastEl = null; }
-      const down = el.getBoundingClientRect().top > 64;
-      swipeTo = el;
-      setText((down ? "Desliza hacia <b>abajo</b> 👇" : "Desliza hacia <b>arriba</b> 👆") + "<small>" + t[1].replace(/<[^>]+>/g, "") + "</small>");
-      const dock = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--dock-h")) || 0;
-      const hx = innerWidth / 2, hy = innerHeight - dock - 130;
-      hand.classList.add("is-swipe");
-      hand.classList.toggle("is-up", !down);
-      hand.style.transform = "translate(" + Math.round(hx - 19) + "px," + Math.round(hy) + "px)";
-      const bw = Math.min(280, innerWidth - 24);
-      bubble.style.width = bw + "px";
-      const bh = bubble.offsetHeight || 70;
-      bubble.style.transform = "translate(" + Math.round((innerWidth - bw) / 2) + "px," + Math.round(hy - bh - 16) + "px)";
-      bubble.classList.remove("is-below");
-      bubble.classList.add("is-swipe");
-      bubble.style.setProperty("--tip", Math.round(bw / 2) + "px");
-      hand.classList.add("is-on"); bubble.classList.add("is-on");
-      return;
-    }
-    swipeTo = null;
-    hand.classList.remove("is-swipe", "is-up");
-    bubble.classList.remove("is-swipe");
-    if (lastEl && lastEl !== el) lastEl.classList.remove("tuto-on");
-    if (el !== lastEl) el.classList.add("tuto-on");
-    lastEl = el;
-    setText(t[1]);
-    const r = el.getBoundingClientRect();
-    const isField = /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName);
-    // La punta del dedo cae sobre el botón (en los campos, a la derecha para no tapar lo que se escribe)
-    const x = isField ? r.right - 34 : r.left + r.width / 2;
-    const y = r.top + r.height * 0.55;
-    hand.style.transform = "translate(" + Math.round(x - 19) + "px," + Math.round(y) + "px)";
-    // El globo va arriba del botón si hay espacio; si no, abajo
-    const bw = Math.min(280, innerWidth - 24);
-    bubble.style.width = bw + "px";
-    const bh = bubble.offsetHeight || 70;
-    const above = r.top - bh - 14 > 70;
-    const bx = Math.max(12, Math.min(innerWidth - bw - 12, r.left + r.width / 2 - bw / 2));
-    const by = above ? r.top - bh - 14 : r.bottom + 62;
-    bubble.style.transform = "translate(" + Math.round(bx) + "px," + Math.round(Math.min(by, innerHeight - bh - 8)) + "px)";
-    bubble.classList.toggle("is-below", !above);
-    bubble.style.setProperty("--tip", Math.round(Math.max(18, Math.min(bw - 18, r.left + r.width / 2 - bx))) + "px");
-    hand.classList.add("is-on");
-    bubble.classList.add("is-on");
-  };
-  let raf = 0;
-  const loop = () => { place(); raf = tutoOn && !document.hidden ? requestAnimationFrame(loop) : 0; };
-  const startTuto = () => { if (!raf) raf = requestAnimationFrame(loop); };
-  const setTuto = (on) => {
-    tutoOn = on;
-    if (tutoBtn) tutoBtn.hidden = on;
-    if (on) startTuto(); else place();
-  };
-  $(".tuto__x", bubble).addEventListener("click", (e) => { e.stopPropagation(); setTuto(false); });
-  // Tocar el globo cuando dice "desliza" lleva directo a donde hay que tocar
-  bubble.addEventListener("click", () => { if (swipeTo) swipeTo.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); });
-  if (tutoBtn) {
-    tutoBtn.hidden = tutoOn;
-    tutoBtn.addEventListener("click", () => { setTuto(true); go(1); }); // la guía empieza desde el paso 1
-  }
-  document.addEventListener("visibilitychange", () => { if (!document.hidden && tutoOn) startTuto(); });
-  // Al enviar la cotización, la guía termina
-  send.addEventListener("click", () => setTimeout(() => { if (!$("#wizDone").hidden) setTuto(false); }, 50));
-  if (tutoOn) startTuto();
+  if (fromLink && P[fromLink]) setTimeout(() => scrollToWiz(), 150);
+  // (La manita de ayuda está en guia.js)
 })();

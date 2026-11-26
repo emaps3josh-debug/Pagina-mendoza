@@ -5,7 +5,7 @@
    Lo que falte en lo publicado (por ejemplo, ajustes nuevos que todavía no existían cuando
    publicaste) se completa con contenido.js, sin tocar lo que ya editaste.
    Después carga render.js (dibuja la página), script.js (menú, filtros, buscador),
-   cotizador.js (cotizador en 3 pasos) y efectos.js (música de fondo y animaciones). */
+   cotizador.js (cotizador en 3 pasos), efectos.js (música de fondo y animaciones) y guia.js (la manita). */
 
 // Completa lo que falte en "data" con lo de "base". Las listas no se mezclan: se respeta la tuya.
 window.completarSitio = function completar(data, base) {
@@ -53,11 +53,11 @@ window.SITIO_BASE = JSON.parse(JSON.stringify(window.SITIO || {}));
   }
 
   // VERSION: súbela (1, 2, 3...) cada vez que cambies estos archivos, para que los celulares no usen copias viejas
-  const VERSION = "2711";
-  for (const src of ["render.js", "script.js", "cotizador.js", "efectos.js"]) {
+  const VERSION = "2712";
+  for (const src of ["render.js", "script.js", "cotizador.js", "efectos.js", "guia.js"]) {
     await new Promise((done) => {
       const s = document.createElement("script");
-      s.src = src + "?v=" + VERSION;
+      s.src = "/" + src + "?v=" + VERSION;
       s.onload = s.onerror = done;
       document.body.appendChild(s);
     });

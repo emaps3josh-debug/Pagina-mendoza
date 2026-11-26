@@ -32,9 +32,47 @@ COTIZADOR EN 3 PASOS
 - Asistente "¿No sabes cuál elegir?": 2 preguntas (invitados y día) y recomienda paquete.
 
 ============================================
+VARIAS PÁGINAS (SEO)
+============================================
+La página ya no es una sola: cada sección tiene su propia dirección para que Google la
+pueda mostrar por separado.
+
+  /                        Inicio (paquetes más pedidos, enlaces a todo, opiniones)
+  /paquetes                Todos los paquetes, filtros y tabla para comparar
+  /cotizar                 Cotizador en 3 pasos
+  /fiestas-infantiles      Paquete infantil
+  /servicios-adicionales   Shows, carrito de shots, palomitas, snacks, inflable...
+  /galeria                 Fotos, videos, TikTok y opiniones
+  /como-apartar            Pasos para apartar y videos
+  /preguntas-frecuentes    Preguntas frecuentes
+
+- Cada página tiene su título, descripción, encabezado principal (h1) y dirección canónica.
+- Datos para Google: el inicio dice quién eres (negocio, teléfono, zona, redes); las demás
+  dicen en qué parte del sitio están. Paquetes, adicionales, infantil y preguntas agregan
+  solos sus precios y respuestas con lo que publiques en el panel.
+- vercel.json quita el ".html" de las direcciones (/paquetes en vez de /paquetes.html).
+- sitemap.xml lista las 8 páginas y robots.txt le dice a Google dónde está (y que no
+  muestre el panel).
+- El buscador busca en todo el sitio y lleva a la página donde está lo que encuentra.
+- "Elegir" en cualquier paquete lleva a /cotizar con ese paquete ya elegido.
+
+DESPUÉS DE SUBIRLO (para que Google lo encuentre más rápido)
+1. Entra a https://search.google.com/search-console y agrega tu propiedad con la
+   dirección de tu página.
+2. En "Sitemaps" escribe sitemap.xml y envíalo.
+3. Si tienes perfil de Google Maps (Google Business), pon ahí la dirección de tu página.
+4. Si un día compras un dominio propio (ej. sonidomendoza.mx), avísale a quien te ayuda con
+   la página: hay que cambiar la dirección en las páginas, el sitemap y robots.txt.
+
+SI HAY QUE CAMBIAR LA ESTRUCTURA DE LAS PÁGINAS
+Los archivos .html se arman con generar-paginas.ps1 y la carpeta "plantillas" (están fuera
+de esta carpeta, en web-v27). Los textos, precios y fotos NO necesitan esto: se editan en
+el panel como siempre.
+
+============================================
 VERSIÓN DE LOS ARCHIVOS
 ============================================
-- index.html y cargar.js llevan un número de versión (?v=2711). Si cambias algún archivo
+- index.html y cargar.js llevan un número de versión (?v=2712). Si cambias algún archivo
   .js o .css, súbelo también en esos dos lugares (2712, 2713...) para que los celulares
   descarguen lo nuevo en vez de usar una copia vieja.
 
@@ -127,7 +165,9 @@ SI ALGO FALLA
   que Realtime Database tenga el nodo "sitio".
 
 ARCHIVOS
-- index.html          Estructura de la página.
+- index.html y las demás .html   Las 8 páginas (generadas con generar-paginas.ps1).
+- vercel.json, sitemap.xml, robots.txt   Direcciones limpias y datos para Google.
+- guia.js             La manita de ayuda (funciona en todas las páginas).
 - contenido.js        Contenido de respaldo (se usa si Firebase no está configurado o falla).
 - firebase-config.js  Datos de tu proyecto de Firebase (hay que llenarlo).
 - cargar.js           Trae el contenido publicado y arranca la página.
