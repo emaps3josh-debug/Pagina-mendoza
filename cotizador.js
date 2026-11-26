@@ -340,13 +340,15 @@
   /* ---------- Tutorial con manita ----------
      Una mano animada señala dónde tocar en cada momento, con un globo que dice qué hacer:
      portada → "Elegir" → "Continuar" → fecha y zona → "Solicitar".
-     Sale cada vez que se abre la página; con la × se oculta solo mientras siga abierta
-     (vuelve con "Ver cómo cotizar" o al abrir la página otra vez).
+     Sale cada vez que se abre o recarga la página; la × la oculta solo en esa visita
+     (vuelve con "Ver cómo cotizar" o al recargar).
      Se apaga en el panel: Cotizador > "Mostrar la manita de ayuda". */
   if (CZ.tutorial === false) return;
   const TUTO_KEY = "mendoza-tuto";
   let tutoOn = true;
-  try { tutoOn = sessionStorage.getItem(TUTO_KEY) !== "off"; localStorage.removeItem(TUTO_KEY); } catch (e) { /* sin almacenamiento */ }
+  // La manita sale SIEMPRE al abrir o recargar la página (la × solo la oculta en esa visita).
+  // Se borra lo que guardaban versiones anteriores, que podía dejarla apagada.
+  try { localStorage.removeItem(TUTO_KEY); sessionStorage.removeItem(TUTO_KEY); } catch (e) { /* sin almacenamiento */ }
   const tutoBtn = $("#tutoBtn");
 
   const hand = document.createElement("div");
@@ -456,7 +458,6 @@
   const startTuto = () => { if (!raf) raf = requestAnimationFrame(loop); };
   const setTuto = (on) => {
     tutoOn = on;
-    try { sessionStorage.setItem(TUTO_KEY, on ? "on" : "off"); } catch (e) { /* sin almacenamiento */ }
     if (tutoBtn) tutoBtn.hidden = on;
     if (on) startTuto(); else place();
   };

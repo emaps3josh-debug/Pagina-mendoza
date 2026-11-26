@@ -32,6 +32,13 @@ COTIZADOR EN 3 PASOS
 - Asistente "¿No sabes cuál elegir?": 2 preguntas (invitados y día) y recomienda paquete.
 
 ============================================
+VERSIÓN DE LOS ARCHIVOS
+============================================
+- index.html y cargar.js llevan un número de versión (?v=2711). Si cambias algún archivo
+  .js o .css, súbelo también en esos dos lugares (2712, 2713...) para que los celulares
+  descarguen lo nuevo en vez de usar una copia vieja.
+
+============================================
 PUESTA EN MARCHA (una sola vez)
 ============================================
 
