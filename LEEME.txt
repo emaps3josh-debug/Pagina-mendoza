@@ -29,6 +29,9 @@ COTIZADOR EN 3 PASOS
   Si el botón no se ve, indica deslizar. Sale cada vez que se abre la página; con la ×
   se oculta mientras siga abierta y vuelve con "Ver cómo cotizar paso a paso". Se apaga en el panel: Cotizador >
   "Mostrar la manita de ayuda".
+- MODO DISCRETO de la manita: aparece cuando el cliente se queda quieto (no mientras desliza
+  o escribe), con textos cortos ("1 de 3: elige tu paquete"), y el globo se esconde solo a los
+  4 segundos dejando solo la mano.
 - Asistente "¿No sabes cuál elegir?": 2 preguntas (invitados y día) y recomienda paquete.
 
 ============================================
@@ -54,7 +57,8 @@ pueda mostrar por separado.
 - sitemap.xml lista las 8 páginas y robots.txt le dice a Google dónde está (y que no
   muestre el panel).
 - El buscador busca en todo el sitio y lleva a la página donde está lo que encuentra.
-- "Elegir" en cualquier paquete lleva a /cotizar con ese paquete ya elegido.
+- "Elegir" en cualquier paquete lleva a /cotizar con ese paquete ya elegido. Si se entra a
+  Cotizar de otra forma (botón "Encuentra tu paquete", menú), nada viene elegido.
 
 DESPUÉS DE SUBIRLO (para que Google lo encuentre más rápido)
 1. Entra a https://search.google.com/search-console y agrega tu propiedad con la
@@ -72,7 +76,7 @@ el panel como siempre.
 ============================================
 VERSIÓN DE LOS ARCHIVOS
 ============================================
-- index.html y cargar.js llevan un número de versión (?v=2712). Si cambias algún archivo
+- index.html y cargar.js llevan un número de versión (?v=2714). Si cambias algún archivo
   .js o .css, súbelo también en esos dos lugares (2712, 2713...) para que los celulares
   descarguen lo nuevo en vez de usar una copia vieja.
 

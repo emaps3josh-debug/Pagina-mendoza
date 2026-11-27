@@ -3,7 +3,8 @@
    - Los precios salen del contenido publicado (panel). Nada viene preseleccionado.
    - El precio del paquete cambia según el día; Básico, Plata y Premium no se ofrecen en sábado.
    - Solo pide fecha, zona y nombre (opcional). La barra de snacks se cotiza "desde" su mínimo de personas.
-   - Lo elegido se guarda en el navegador: si el cliente sale y vuelve, sigue ahí.
+   - Al entrar nada viene elegido (salvo que llegue desde el botón "Elegir" de un paquete).
+     La fecha, la zona y el nombre se recuerdan solo durante la visita.
    - Es una cotización estimada: la disponibilidad se confirma por WhatsApp. */
 (() => {
   const wiz = document.getElementById("wiz");
@@ -29,7 +30,9 @@
   /* ---------- Estado ---------- */
   let st = { pack: "", sel: [], step: 1, f: {}, h: {} }; // h = respuestas del asistente (invitados y día)
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    // Se guarda solo durante la visita (sessionStorage); se borra lo que guardaban versiones anteriores
+    localStorage.removeItem(KEY);
+    const saved = JSON.parse(sessionStorage.getItem(KEY) || "null");
     if (saved && typeof saved === "object") st = Object.assign(st, saved);
   } catch (e) { /* sin almacenamiento */ }
   if (!P[st.pack]) st.pack = "";
@@ -39,9 +42,12 @@
   st.h = st.h && typeof st.h === "object" ? st.h : {};
   ["invitados", "tipo", "telefono"].forEach((k) => delete st.f[k]); // campos que ya no se piden
   const CZ = S.cotizacion || {};
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* sin espacio */ } };
+  const save = () => { try { sessionStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* sin espacio */ } };
   // Llegó desde otra página con un paquete elegido (cotizar?paquete=p-oro): se selecciona y pasa al paso 2
   const fromLink = new URLSearchParams(location.search).get("paquete");
+  // Al entrar a Cotizar nada viene elegido: el cliente escoge su paquete y sus extras.
+  // (Solo se recuerdan la fecha, la zona y el nombre durante la visita.)
+  st.pack = ""; st.sel = []; st.step = 1;
   if (fromLink && P[fromLink]) {
     st.pack = fromLink;
     st.step = 2;
