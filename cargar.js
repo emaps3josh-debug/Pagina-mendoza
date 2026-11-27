@@ -53,7 +53,7 @@ window.SITIO_BASE = JSON.parse(JSON.stringify(window.SITIO || {}));
   }
 
   // VERSION: súbela (1, 2, 3...) cada vez que cambies estos archivos, para que los celulares no usen copias viejas
-  const VERSION = "2712";
+  const VERSION = "2713";
   for (const src of ["render.js", "script.js", "cotizador.js", "efectos.js", "guia.js"]) {
     await new Promise((done) => {
       const s = document.createElement("script");

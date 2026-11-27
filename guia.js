@@ -41,42 +41,52 @@
   };
   const visibleBtn = (sel) => $$(sel).find(inView);
   const shown = (el) => !!(el && !el.hidden && el.offsetParent); // existe y no está escondido (aunque esté fuera de la pantalla)
-  const FIELD_TXT = { fecha: "Escribe la <b>fecha</b> de tu fiesta 📅", lugar: "Escribe la <b>zona o colonia</b> de tu fiesta 📍" };
+  const FIELD_TXT = { fecha: "Escribe la <b>fecha</b> 📅", lugar: "Escribe la <b>zona</b> 📍" };
 
   // Qué hay que tocar ahora: [elemento, texto]
   const target = () => {
     if (document.querySelector("dialog[open]")) return null;
     const hb = $("#heroBtn");
-    if (hb && inView(hb)) return [hb, "¡Hola! 👋 Toca aquí para <b>empezar a cotizar</b>"];
+    if (hb && inView(hb)) return [hb, "<b>Empieza aquí</b> 👆"];
     // Páginas sin cotizador: el "Elegir" de cualquier paquete lleva a cotizar
     if (!wiz || !C) {
       const el = visibleBtn("a[data-pack]") || $("a[data-pack]");
-      return [el, "Toca <b>Elegir</b> en el paquete que tú quieras para <b>cotizarlo</b> 🎵"];
+      return [el, "Toca <b>Elegir</b> para cotizar"];
     }
     const st = C.state();
     if (st.step === 1) {
-      if (st.pack) return [visibleBtn("#wizBarGo, [data-step=\"1\"] .is-sel [data-pick]") || $("#wizBarGo"), "¡Muy bien! 🎉 Ahora toca <b>Continuar</b>"];
+      if (st.pack) return [visibleBtn("#wizBarGo, [data-step=\"1\"] .is-sel [data-pick]") || $("#wizBarGo"), "Ahora toca <b>Continuar</b>"];
       const rec = (S.paquetes || {}).recomendado;
       const el = visibleBtn("[data-step=\"1\"] [data-pick]") || $(".pack--pick[data-pid=\"" + rec + "\"] [data-pick]") || $(".pack--pick [data-pick]");
-      return [el, "<b>Paso 1:</b> toca <b>Elegir</b> en el paquete que tú quieras 🎵 <small>Abajo hay más paquetes 👇</small>"];
+      return [el, "<b>1 de 3:</b> elige tu paquete"];
     }
     if (st.step === 2) {
       const el = visibleBtn("[data-step=\"2\"] .wiz__nav .btn--main") || visibleBtn("#wizBarGo") || $("[data-step=\"2\"] .wiz__nav .btn--main");
-      return [el, "<b>Paso 2:</b> si quieres algo extra toca <b>Agregar</b>. Cuando termines, toca <b>Continuar</b> 👉"];
+      return [el, "<b>2 de 3:</b> agrega extras o <b>Continuar</b>"];
     }
     if (st.step === 3) {
       const form = $("#wizForm");
       const k = ["fecha", "lugar"].find((x) => !String((st.f || {})[x] || "").trim());
-      if (k) return [form && form.elements[k], "<b>Paso 3:</b> " + FIELD_TXT[k]];
-      return [$("#wizSend"), "<b>¡Último paso!</b> Toca aquí para <b>enviar tu cotización</b> por WhatsApp 📲"];
+      if (k) return [form && form.elements[k], "<b>3 de 3:</b> " + FIELD_TXT[k]];
+      return [$("#wizSend"), "<b>¡Listo!</b> Toca para enviar 📲"];
     }
     return null;
   };
 
+  /* Modo discreto:
+     - Aparece 2.5 s después de abrir la página y solo cuando el cliente deja de moverse (1.5 s quieto).
+     - Mientras desliza, toca o escribe, se esconde.
+     - El globo se muestra 4 s cada vez que cambia la instrucción y luego se encoge: queda solo la mano. */
+  const START = Date.now(), IDLE_MS = 1500, BUBBLE_MS = 4000;
+  let lastAct = 0, textSince = 0;
+  ["scroll", "wheel", "touchstart", "pointerdown", "keydown"].forEach((ev) => addEventListener(ev, () => (lastAct = Date.now()), { passive: true, capture: true }));
   let lastEl = null, lastTxt = "", swipeTo = null;
   const hide = () => { hand.classList.remove("is-on"); bubble.classList.remove("is-on"); if (lastEl) lastEl.classList.remove("tuto-on"); lastEl = null; swipeTo = null; };
-  const setText = (s) => { if (s !== lastTxt) { tTxt.innerHTML = s; lastTxt = s; } };
+  const setText = (s) => { if (s !== lastTxt) { tTxt.innerHTML = s; lastTxt = s; textSince = Date.now(); } };
   const place = () => {
+    const now = Date.now();
+    if (now - START < 2500 || now - lastAct < IDLE_MS) return hide();
+    bubble.classList.toggle("is-mini", textSince && now - textSince > BUBBLE_MS);
     const t = tutoOn ? target() : null;
     const el = t && t[0];
     if (!shown(el)) return hide();
@@ -87,15 +97,14 @@
       if (lastEl) { lastEl.classList.remove("tuto-on"); lastEl = null; }
       const down = el.getBoundingClientRect().top > 64;
       swipeTo = el;
-      setText((down ? "Desliza hacia <b>abajo</b> 👇" : "Desliza hacia <b>arriba</b> 👆") + "<small>" + t[1].replace(/<[^>]+>/g, "") + "</small>");
-      const hx = innerWidth / 2, hy = innerHeight - dockH() - 130;
+      setText(down ? "Desliza 👇" : "Sube 👆");
+      const hx = innerWidth / 2, hy = innerHeight - dockH() - 110;
       hand.classList.add("is-swipe");
       hand.classList.toggle("is-up", !down);
-      hand.style.transform = "translate(" + Math.round(hx - 19) + "px," + Math.round(hy) + "px)";
-      const bw = Math.min(280, innerWidth - 24);
-      bubble.style.width = bw + "px";
-      const bh = bubble.offsetHeight || 70;
-      bubble.style.transform = "translate(" + Math.round((innerWidth - bw) / 2) + "px," + Math.round(hy - bh - 16) + "px)";
+      hand.style.transform = "translate(" + Math.round(hx - 16) + "px," + Math.round(hy) + "px)";
+      bubble.style.width = "auto";
+      const bw = bubble.offsetWidth || 120, bh = bubble.offsetHeight || 40;
+      bubble.style.transform = "translate(" + Math.round((innerWidth - bw) / 2) + "px," + Math.round(hy - bh - 12) + "px)";
       bubble.classList.remove("is-below");
       bubble.classList.add("is-swipe");
       bubble.style.setProperty("--tip", Math.round(bw / 2) + "px");
@@ -114,11 +123,11 @@
     // La punta del dedo cae sobre el botón (en los campos, a la derecha para no tapar lo que se escribe)
     const x = isField ? r.right - 34 : r.left + r.width / 2;
     const y = r.top + r.height * 0.55;
-    hand.style.transform = "translate(" + Math.round(x - 19) + "px," + Math.round(y) + "px)";
+    hand.style.transform = "translate(" + Math.round(x - 16) + "px," + Math.round(y) + "px)";
     // El globo va arriba del botón si hay espacio; si no, abajo
-    const bw = Math.min(280, innerWidth - 24);
-    bubble.style.width = bw + "px";
-    const bh = bubble.offsetHeight || 70;
+    bubble.style.width = "auto";
+    const bw = Math.min(bubble.offsetWidth || 200, innerWidth - 24);
+    const bh = bubble.offsetHeight || 44;
     const above = r.top - bh - 14 > 70;
     const bx = Math.max(12, Math.min(innerWidth - bw - 12, r.left + r.width / 2 - bw / 2));
     const by = above ? r.top - bh - 14 : r.bottom + 62;
